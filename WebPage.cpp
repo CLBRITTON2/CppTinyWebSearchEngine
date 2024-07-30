@@ -1,6 +1,6 @@
 #include "WebPage.h"
 
-WebPage::WebPage(const std::string url, const std::string webPageContent)
+WebPage::WebPage(const std::string url, const std::string webPageContent = "")
 	:_url{ url }, _webPageContent{ webPageContent }
 {
 }
