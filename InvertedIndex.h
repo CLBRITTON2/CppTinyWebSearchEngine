@@ -15,7 +15,7 @@ public:
 	// TODO: Switch to a proximity index to store words and position to allow query phrases instead of just words 
 
 	// Returns a vector containing the page ID paired with the number of times the queried word appeared in the page
-	std::vector<std::pair<int, int>> Search(const std::string& query);
+	std::vector<std::pair<int, int>> GetTokenFrequency(const std::string& query);
 
 private:
 	std::map<std::string, std::map<int, int>> _index;

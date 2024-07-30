@@ -1,7 +1,7 @@
 #include "WebPage.h"
 
-WebPage::WebPage(const std::string url, const std::string webPageContent = "")
-	:_url{ url }, _webPageContent{ webPageContent }
+WebPage::WebPage(const std::string url, const std::string webPageContent = "", const int webPageID)
+	:_url{ url }, _webPageContent{ webPageContent }, _webPageID {webPageID}
 {
 }
 
@@ -10,7 +10,7 @@ const std::string WebPage::GetWebPageUrl()
 	return _url;
 }
 
-const std::string WebPage::GetWebPageContent()
+const std::string WebPage::GetWebPageContent() const
 {
 	return _webPageContent;
 }
@@ -21,7 +21,7 @@ void WebPage::SetWebPageContent(const std::string webPageContent)
 	_webPageContent = webPageContent;
 }
 
-int WebPage::GetWebPageID()
+const int WebPage::GetWebPageID() const
 {
-	return _id;
+	return _webPageID;
 }

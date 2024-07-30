@@ -6,12 +6,12 @@ class WebPage
 private: 
 	std::string _url;
 	std::string _webPageContent;
-	int _id;
+	const int _webPageID;
 
 public:
-	WebPage(const std::string url, const std::string webPageContent);
+	WebPage(const std::string url, const std::string webPageContent, int webPageID);
 	const std::string GetWebPageUrl();
-	const std::string GetWebPageContent();
+	const std::string GetWebPageContent() const;
 	void SetWebPageContent(const std::string webPageContent);
-	int GetWebPageID();
+	const int GetWebPageID() const;
 };
