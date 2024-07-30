@@ -129,11 +129,13 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="InvertedIndex.cpp" />
+    <ClCompile Include="SearchEngine.cpp" />
     <ClCompile Include="WebPage.cpp" />
     <ClCompile Include="WebPageCrawler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InvertedIndex.h" />
+    <ClInclude Include="SearchEngine.h" />
     <ClInclude Include="WebPage.h" />
     <ClInclude Include="WebPageCrawler.h" />
   </ItemGroup>
