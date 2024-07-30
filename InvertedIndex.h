@@ -11,6 +11,9 @@ public:
 	void IndexWebPageContent(const WebPage& webPage);
 
 	// Needs a method to get web pages from said collection using a search term that returns a collection of applicable web pages
+	// Initial implementation will store the page Id and number of occurences of each queried word
+	// TODO: Switch to a proximity index to store words and position to allow query phrases instead of just words 
+
 	// Returns a vector containing the page ID paired with the number of times the queried word appeared in the page
 	std::vector<std::pair<int, int>> Search(const std::string& query);
 
