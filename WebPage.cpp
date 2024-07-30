@@ -20,3 +20,8 @@ void WebPage::SetWebPageContent(const std::string webPageContent)
 {
 	_webPageContent = webPageContent;
 }
+
+int WebPage::GetWebPageID()
+{
+	return _id;
+}
