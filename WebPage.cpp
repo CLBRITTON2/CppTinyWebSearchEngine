@@ -1,7 +1,7 @@
 #include "WebPage.h"
 
-WebPage::WebPage(const std::string url, const std::string webPageContent = "", const int webPageID)
-	:_url{ url }, _webPageContent{ webPageContent }, _webPageID {webPageID}
+WebPage::WebPage(const std::string url, const int webPageID, const std::string webPageContent = "")
+	:_url{ url }, _webPageID{ webPageID }, _webPageContent{ webPageContent }
 {
 }
 
