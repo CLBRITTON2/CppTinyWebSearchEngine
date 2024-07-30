@@ -14,3 +14,9 @@ const std::string WebPage::GetWebPageContent()
 {
 	return _webPageContent;
 }
+
+// Should be called after crawler reads a webpage to set the content
+void WebPage::SetWebPageContent(const std::string webPageContent)
+{
+	_webPageContent = webPageContent;
+}
