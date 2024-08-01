@@ -8,6 +8,8 @@ class InvertedIndex
 public:
 	// Breaks a file down into individual words and maps them according to file ID
 	void IndexWebPageContent(const WebPage& webPage);
+	void AddTokenToIndex(const std::string& token, int webPageID);
+	int CurrentWebPageID;
 
 	// Initial implementation will store the page Id and number of occurences of each queried word
 	// TODO: Switch to a proximity index to store words and position to allow query phrases instead of just words 
