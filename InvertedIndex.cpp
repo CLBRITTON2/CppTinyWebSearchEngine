@@ -9,10 +9,10 @@ void InvertedIndex::IndexWebPageContent(const WebPage& webPage)
 	std::stringstream stringStream(webPage.GetWebPageContent());
 	std::string token;
 
-	// Tokenize the content of the web page
+	// Read the content of the web page
 	while (stringStream >> token)
 	{
-		// Increment the frequency of each token
+		// Increment the frequency of each token for the current web page
 		_index[token][webPageID]++;
 	}
 }
@@ -27,6 +27,11 @@ std::vector<std::pair<int, int>> InvertedIndex::GetTokenFrequency(const std::str
 		{
 			searchResults.push_back(pageIdFrequency);
 		}
+	}
+	else
+	{
+		std::cout << "Key doesn't exist: Coldn't find any instance of \"" << query << "\" in provided web pages" << std::endl;
+		return {};
 	}
 	return searchResults;
 }

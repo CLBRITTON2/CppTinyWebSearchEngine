@@ -6,11 +6,9 @@
 class InvertedIndex
 {
 public:
-	// Needs a method for adding web pages to a collection - takes a web page object and returns nothing
-	// Breaks the file down into individual words, updates inverted index with frequency of each word in the page
+	// Breaks a file down into individual words and maps them according to file ID
 	void IndexWebPageContent(const WebPage& webPage);
 
-	// Needs a method to get web pages from said collection using a search term that returns a collection of applicable web pages
 	// Initial implementation will store the page Id and number of occurences of each queried word
 	// TODO: Switch to a proximity index to store words and position to allow query phrases instead of just words 
 

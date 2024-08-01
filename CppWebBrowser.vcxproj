@@ -109,6 +109,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>C:\vcpkg\vcpkg-2024.07.12\installed\x64-windows\lib\lexbor.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -136,9 +137,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InvertedIndex.h" />
-    <ClInclude Include="rapidxml.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="SearchEngine.h" />
     <ClInclude Include="WebPage.h" />
     <ClInclude Include="WebPageCrawler.h" />
