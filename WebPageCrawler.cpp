@@ -67,13 +67,15 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageHtmlCo
 
 	parser = lxb_html_parser_create();
 	status = lxb_html_parser_init(parser);
-	if (status != LXB_STATUS_OK) {
+	if (status != LXB_STATUS_OK) 
+	{
 		return "";
 	}
 
 	// Parse the HTML content
 	doc = lxb_html_parse(parser, (const lxb_char_t*)webPageHtmlContent.c_str(), webPageHtmlContent.size());
-	if (doc == NULL) {
+	if (doc == NULL) 
+	{
 		lxb_html_parser_destroy(parser);
 		return "";
 	}
@@ -83,7 +85,8 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageHtmlCo
 	// Serialize the HTML tree and extract text - skip comments - I believe comments will skew search results but unsure
 	status = lxb_html_serialize_pretty_tree_cb(lxb_dom_interface_node(doc), LXB_HTML_SERIALIZE_OPT_SKIP_COMMENT, 0, SerializerCallback, &extractedText);
 
-	if (status != LXB_STATUS_OK) {
+	if (status != LXB_STATUS_OK) 
+	{
 		lxb_html_document_destroy(doc);
 		lxb_html_parser_destroy(parser);
 		return "";
