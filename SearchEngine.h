@@ -9,10 +9,12 @@
 class SearchEngine
 {
 public:
-	void IndexWebPage(const WebPage& webPage);
-	std::vector<std::pair<WebPage, int>> Search(const std::string& query, int numberOfResults);
+	void IndexWebPage(WebPage& webPage);
+	std::vector<std::pair<WebPage*, int>> Search(const std::string& query);
 
 private:
 	WebPageCrawler _crawler;
 	InvertedIndex _index;
+	std::map<int, std::shared_ptr<WebPage>> _webPages;
+	WebPage* GetWebPageById(int webPageId);
 };
