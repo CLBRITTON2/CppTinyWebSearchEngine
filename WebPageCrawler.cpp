@@ -83,7 +83,7 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageHtmlCo
 	std::string extractedText;
 
 	// Serialize the HTML tree and extract text - skip comments - I believe comments will skew search results but unsure
-	status = lxb_html_serialize_pretty_tree_cb(lxb_dom_interface_node(doc), LXB_HTML_SERIALIZE_OPT_SKIP_COMMENT, 0, SerializerCallback, &extractedText);
+	status = lxb_html_serialize_deep_cb(lxb_dom_interface_node(doc), SerializerCallback, &extractedText);
 
 	if (status != LXB_STATUS_OK) 
 	{
