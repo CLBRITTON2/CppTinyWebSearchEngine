@@ -17,8 +17,8 @@ int main()
     std::ifstream inFile("WebPages.txt");
     if (!inFile.is_open())
     {
-        std::cerr << "Failed to open file." << std::endl;
-        return 1;
+        std::cerr << "Failed to open config file." << std::endl;
+        return -1;
     }
 
     // Add each URL from config file to a collection
@@ -43,7 +43,7 @@ int main()
     std::cout << std::endl;
 
     // Search for a token
-    std::string query = "the";
+    std::string query = "computer";
 
     auto timeThree = high_resolution_clock::now();
     std::vector<std::pair<WebPage*, int>> searchResults = searchEngine.Search(query);

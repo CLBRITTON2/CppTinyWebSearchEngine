@@ -103,17 +103,17 @@ unsigned int WebPageCrawler::SerializerCallback(const lxb_char_t* data, size_t l
 {
 	std::string* extractedText = static_cast<std::string*>(ctx);
 	std::string text(data, data + len);
-
+	extractedText->reserve(len);
 
 	// Preprocess the text (can't find a way through lexbor to remove formatting chars etc)
-	std::string cleanText;
-	for (char character : text) {
-		if (isalnum(static_cast<unsigned char>(character)) || isspace(static_cast<unsigned char>(character))) {
-			cleanText += character;
+	for (char character : text) 
+	{
+		if (isalnum(static_cast<unsigned char>(character)) || isspace(static_cast<unsigned char>(character))) 
+		{
+			extractedText->push_back(character);
 		}
 	}
 
-	extractedText->append(cleanText);
 	return 0;
 }
 
