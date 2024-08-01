@@ -10,7 +10,6 @@ int main()
     using std::chrono::duration;
     using std::chrono::milliseconds;
 
-    // Create a SearchEngine instance
     SearchEngine searchEngine;
 
     std::vector<std::string> webPagesFromConfig;
@@ -28,7 +27,7 @@ int main()
         webPagesFromConfig.push_back(line);
     }
 
-    auto t1 = high_resolution_clock::now();
+    auto timeOne = high_resolution_clock::now();
     int webPageID = 1;
     for (auto& line : webPagesFromConfig)
     {
@@ -36,15 +35,19 @@ int main()
         searchEngine.IndexWebPage(webPage);
         webPageID++;
     }
-    auto t2 = high_resolution_clock::now();
+    auto timeTwo = high_resolution_clock::now();
 
     // Getting number of milliseconds as a double. 
-    duration<double, std::milli> ms_double = t2 - t1;
-    std::cout << "It took " << ms_double.count() << " ms to get and index all web pages" << std::endl;
+    duration<double, std::milli> msToIndex = timeTwo - timeOne;
+    std::cout << "It took " << msToIndex.count() << " ms to get and index all web pages" << std::endl;
+    std::cout << std::endl;
 
     // Search for a token
     std::string query = "the";
+
+    auto timeThree = high_resolution_clock::now();
     std::vector<std::pair<WebPage*, int>> searchResults = searchEngine.Search(query);
+    auto timeFour = high_resolution_clock::now();
 
     // Print the search results
     for (const auto& result : searchResults)
@@ -53,6 +56,11 @@ int main()
         int frequency = result.second;
         std::cout << "Web Page ID: " << webPage->GetWebPageID() << ", Frequency of search term \"" << query << "\": " << frequency << std::endl;
     }
+
+    // Getting number of milliseconds as a double. 
+    duration<double, std::milli> msToSearch = timeFour - timeThree;
+    std::cout << std::endl;
+    std::cout << "It took " << msToSearch.count() << " ms to run the search query against the index" << std::endl;
 
     return 0;
 }
