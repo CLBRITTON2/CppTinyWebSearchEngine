@@ -2,14 +2,13 @@
 #include "SearchEngine.h"
 #include <chrono>
 #include <fstream>
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 int main()
 {
-    using std::chrono::high_resolution_clock;
-    using std::chrono::duration_cast;
-    using std::chrono::duration;
-    using std::chrono::milliseconds;
-
     SearchEngine searchEngine;
 
     std::vector<std::string> webPagesFromConfig;
