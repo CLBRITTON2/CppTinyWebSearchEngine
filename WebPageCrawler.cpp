@@ -4,12 +4,11 @@
 #include <curl/curl.h>
 #include <lexbor/html/html.h>
 
-
 void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 {
 	CURL* curlHandle;
 	CURLcode httpResponseCode;
-	std::string webPageHtmlContent;
+	std::string webPageContent;
 
 	// Create the cURL handle and validate it
 	curlHandle = curl_easy_init();
@@ -28,11 +27,11 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 			return;
 		}
 
-		// Handle the recieved data - append the recieved data to the webPageHtmlContent string
+		// Handle the recieved data - append the recieved data to the webPageContent string
 		curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, WriteCallback);
 
 		// Set the write data pointer to the webPageHtmlContent string
-		curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, &webPageHtmlContent);
+		curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, &webPageContent);
 
 		// Execute the cURL request
 		httpResponseCode = curl_easy_perform(curlHandle);
@@ -47,7 +46,7 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 		else
 		{
 			// Good response extract text from the HTML content to populate the web page content
-			std::string extractedText = ExtractTextFromHtml(webPageHtmlContent);
+			std::string extractedText = ExtractTextFromHtml(webPageContent);
 			webPage.SetWebPageContent(extractedText);
 		}
 
@@ -59,42 +58,42 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 	}
 }
 
-std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageHtmlContent) 
+std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageContent) 
 {
 	lxb_status_t status;
-	lxb_html_parser_t* parser;
+	lxb_html_parser_t* htmlParser;
 	lxb_html_document_t* doc;
 
-	parser = lxb_html_parser_create();
-	status = lxb_html_parser_init(parser);
+	htmlParser = lxb_html_parser_create();
+	status = lxb_html_parser_init(htmlParser);
 	if (status != LXB_STATUS_OK) 
 	{
 		return "";
 	}
 
 	// Parse the HTML content
-	doc = lxb_html_parse(parser, (const lxb_char_t*)webPageHtmlContent.c_str(), webPageHtmlContent.size());
+	doc = lxb_html_parse(htmlParser, (const lxb_char_t*)webPageContent.c_str(), webPageContent.size());
 	if (doc == NULL) 
 	{
-		lxb_html_parser_destroy(parser);
+		lxb_html_parser_destroy(htmlParser);
 		return "";
 	}
 
 	std::string extractedText;
 
-	// Serialize the HTML tree and extract text - skip comments - I believe comments will skew search results but unsure
-	status = lxb_html_serialize_deep_cb(lxb_dom_interface_node(doc), SerializerCallback, &extractedText);
+	// Serialize the HTML and extract text without making a copy
+	status = lxb_html_serialize_pretty_deep_cb(lxb_dom_interface_node(doc), LXB_HTML_DOCUMENT_PARSE_WO_COPY,  0, SerializerCallback, &extractedText);
 
 	if (status != LXB_STATUS_OK) 
 	{
 		lxb_html_document_destroy(doc);
-		lxb_html_parser_destroy(parser);
+		lxb_html_parser_destroy(htmlParser);
 		return "";
 	}
 
 	// Clean up
 	lxb_html_document_destroy(doc);
-	lxb_html_parser_destroy(parser);
+	lxb_html_parser_destroy(htmlParser);
 
 	return extractedText;
 }
