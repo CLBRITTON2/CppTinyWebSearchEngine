@@ -2,14 +2,15 @@
 #include "SearchEngine.h"
 #include <chrono>
 #include <fstream>
+#include <thread>
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 
+// Print all search results
 static void PrintAllSearchResults(std::vector<std::pair<WebPage*, int>>& searchResults, std::string& query)
 {
-    // Print all of the search results
     for (const auto& result : searchResults)
     {
         WebPage* webPage = result.first;
@@ -18,6 +19,7 @@ static void PrintAllSearchResults(std::vector<std::pair<WebPage*, int>>& searchR
     }
 }
 
+// Print the search result with the highest number of query matches
 static void PrintSearchResultsWithHigestQueryFrequency(std::vector<std::pair<WebPage*, int>>& searchResults, std::string& query)
 {
     int highestFrequency = 0;
@@ -64,14 +66,30 @@ int main()
         webPagesFromConfig.push_back(line);
     }
 
-    auto timeOne = high_resolution_clock::now();
+
+    // Create an empty vector of threads for each web page
+    std::vector<std::thread> threads;
     int webPageID = 1;
+    auto timeOne = high_resolution_clock::now();
+
+    // Basically a C# foreach loop going over each line in the txt file containing urls
     for (auto& line : webPagesFromConfig)
     {
-        WebPage webPage(line, webPageID);
-        searchEngine.IndexWebPage(webPage);
+        // Create a thread for each web page so we can index every page concurrently, adds the thread to threads vector
+        // This is a combination of AI/Stack overflow 
+        // Might have to look at refactoring this as the project scales because we'll run out of threads
+        threads.emplace_back([&searchEngine, &line, webPageID]() {
+            WebPage webPage(line, webPageID);
+            searchEngine.IndexWebPage(webPage);
+            });
         webPageID++;
     }
+
+    for (auto& thread : threads) 
+    {
+        thread.join();
+    }
+
     auto timeTwo = high_resolution_clock::now();
 
     // Getting number of milliseconds as a double. 
@@ -86,7 +104,8 @@ int main()
     std::vector<std::pair<WebPage*, int>> searchResults = searchEngine.Search(query);
     auto timeFour = high_resolution_clock::now();
 
-    //PrintAllSearchResults(searchResults, query);
+    PrintAllSearchResults(searchResults, query);
+    std::cout << std::endl;
     PrintSearchResultsWithHigestQueryFrequency(searchResults, query);
 
     // Getting number of milliseconds as a double. 
