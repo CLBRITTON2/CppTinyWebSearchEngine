@@ -4,6 +4,17 @@
 #include <curl/curl.h>
 #include <lexbor/html/html.h>
 
+size_t WebPageCrawler::WriteCallback(void* buffer, size_t bufferSize, size_t numberOfBlocks, void* userData)
+{
+	((std::string*)userData)->append((char*)buffer, bufferSize * numberOfBlocks);
+	return bufferSize * numberOfBlocks;
+}
+
+WebPageCrawler::WebPageCrawler()
+{
+	_lemmatizer.LoadBinary("C:\\Users\\Chris\\OneDrive\\Documents\\CppWork\\CppWebBrowser\\english.bin");
+}
+
 void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 {
 	CURL* curlHandle;
@@ -14,14 +25,9 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 	curlHandle = curl_easy_init();
 	if (curlHandle)
 	{
-		//std::cout << "curlHandle successfully initialized" << std::endl;
-		
-		// Optional verbose logging for cURL issues
-		//curl_easy_setopt(curlHandle, CURLOPT_VERBOSE, 1L);
-
 		// Set the URL to fetch
 		CURLcode setOptResult = curl_easy_setopt(curlHandle, CURLOPT_URL, webPageUrl.c_str());
-		if (setOptResult != CURLE_OK) 
+		if (setOptResult != CURLE_OK)
 		{
 			std::cerr << "curl_easy_setopt failed: " << curl_easy_strerror(setOptResult) << std::endl;
 			return;
@@ -35,8 +41,6 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 
 		// Execute the cURL request
 		httpResponseCode = curl_easy_perform(curlHandle);
-
-		//std::cout << webPageHtmlContent << std::endl;
 
 		// Validate the response
 		if (httpResponseCode != CURLE_OK)
@@ -58,7 +62,7 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 	}
 }
 
-std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageContent) 
+std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageContent)
 {
 	lxb_status_t status;
 	lxb_html_parser_t* htmlParser;
@@ -66,12 +70,12 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 
 	htmlParser = lxb_html_parser_create();
 	status = lxb_html_parser_init(htmlParser);
-	if (status != LXB_STATUS_OK) 
+	if (status != LXB_STATUS_OK)
 	{
 		return "";
 	}
 
-	 // Parse HTML 
+	// Parse HTML 
 	document = lxb_html_parse_chunk_begin(htmlParser);
 	if (document == NULL)
 	{
@@ -116,29 +120,38 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 	return extractedText;
 }
 
-size_t WebPageCrawler::WriteCallback(void* buffer, size_t bufferSize, size_t numberOfBlocks, void* userData)
-{
-	((std::string*)userData)->append((char*)buffer, bufferSize * numberOfBlocks);
-	return bufferSize * numberOfBlocks;
-}
-
 void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
 {
 	if (node->type == LXB_DOM_NODE_TYPE_TEXT)
 	{
 		size_t len;
 		lxb_char_t* text = lxb_dom_node_text_content(node, &len);
-		std::string filteredText;
+		std::string filteredText{ "" };
 
 		for (size_t i = 0; i < len; ++i)
 		{
 			char character = static_cast<char>(text[i]);
 			if (isalnum(static_cast<unsigned char>(character)) || isspace(static_cast<unsigned char>(character)))
 			{
-				extractedText.push_back(character);
+				// Serialize lowercase for case agnostic querying
+				filteredText.push_back(tolower(character));
 			}
 		}
 
+		// Split the filteredText into words
+		std::istringstream iss(filteredText);
+		std::string word;
+
+		extractedText.reserve(extractedText.size() + filteredText.size()); // Reserve space
+
+		while (iss >> word)
+		{
+			// Lemmatize each word
+			char* lemmatizedWord = _lemmatizer.Lemmatize(word.c_str());
+			extractedText += lemmatizedWord;
+			extractedText += " ";
+			delete[] lemmatizedWord;
+		}
 	}
 	else
 	{
