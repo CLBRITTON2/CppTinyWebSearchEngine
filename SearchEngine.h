@@ -5,12 +5,13 @@
 #include "WebPage.h"
 #include "WebPageCrawler.h"
 #include "InvertedIndex.h"
+#include "RdrLemmatizer.h"
 
 class SearchEngine
 {
 public:
 	void IndexWebPage(WebPage& webPage);
-	std::vector<std::pair<WebPage*, int>> Search(const std::string& query);
+	std::vector<std::pair<WebPage*, int>> Search(std::string& query);
 
 private:
 	WebPageCrawler _crawler;

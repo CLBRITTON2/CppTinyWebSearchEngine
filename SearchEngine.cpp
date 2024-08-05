@@ -1,4 +1,5 @@
 #include "SearchEngine.h"
+#include <algorithm>
 
 void SearchEngine::IndexWebPage(WebPage& webPage)
 {
@@ -7,8 +8,11 @@ void SearchEngine::IndexWebPage(WebPage& webPage)
 	_index.IndexWebPageContent(webPage);
 }
 
-std::vector<std::pair<WebPage*, int>> SearchEngine::Search(const std::string& query)
+std::vector<std::pair<WebPage*, int>> SearchEngine::Search(std::string& query)
 {
+	// Brute force query to lowercase so we can query case agnostic
+	std::transform(query.begin(), query.end(), query.begin(), [](unsigned char c) { return std::tolower(c); });
+
 	std::vector<std::pair<int, int>> tokenFrequencies = _index.GetTokenFrequency(query);
 
 	std::vector<std::pair<WebPage*, int>> searchResults;
