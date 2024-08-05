@@ -3,14 +3,24 @@
 #include <chrono>
 #include <fstream>
 #include <thread>
+#include <algorithm>
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 
+static bool CompareSearchResults(const std::pair<WebPage*, int>& pageOne, const std::pair<WebPage*, int>& pageTwo)
+{
+    // Compare the frequency of the queried term page 1 vs page 2
+    return pageOne.second < pageTwo.second;
+}
+
 // Print all search results
 static void PrintAllSearchResults(std::vector<std::pair<WebPage*, int>>& searchResults, std::string& query)
 {
+    // Sort the search results based on the occurences of the queried term ascendning
+    std::sort(searchResults.begin(), searchResults.end(), CompareSearchResults);
+
     for (const auto& result : searchResults)
     {
         WebPage* webPage = result.first;
@@ -23,7 +33,7 @@ static void PrintAllSearchResults(std::vector<std::pair<WebPage*, int>>& searchR
 static void PrintSearchResultsWithHigestQueryFrequency(std::vector<std::pair<WebPage*, int>>& searchResults, std::string& query)
 {
     int highestFrequency = 0;
-    WebPage* maxFrequencyWebPage = nullptr;
+    WebPage* highestFrequencyWebPage = nullptr;
 
     for (const auto& result : searchResults)
     {
@@ -33,13 +43,13 @@ static void PrintSearchResultsWithHigestQueryFrequency(std::vector<std::pair<Web
         if (frequency > highestFrequency)
         {
             highestFrequency = frequency;
-            maxFrequencyWebPage = webPage;
+            highestFrequencyWebPage = webPage;
         }
     }
 
-    if (maxFrequencyWebPage != nullptr)
+    if (highestFrequencyWebPage != nullptr)
     {
-        std::cout << "Web Page ID: " << maxFrequencyWebPage->GetWebPageID() << ", URL: " << maxFrequencyWebPage->GetWebPageUrl() << ", Highest Frequency of (some variant of) search term \"" << query << "\": " << highestFrequency << std::endl;
+        std::cout << "Web Page ID: " << highestFrequencyWebPage->GetWebPageID() << ", URL: " << highestFrequencyWebPage->GetWebPageUrl() << ", Highest Frequency of (some variant of) search term \"" << query << "\": " << highestFrequency << std::endl;
     }
     else
     {
