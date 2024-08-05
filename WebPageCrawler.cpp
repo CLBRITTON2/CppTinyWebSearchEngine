@@ -155,11 +155,15 @@ void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& ext
 	}
 	else
 	{
-		lxb_dom_node_t* child = lxb_dom_node_first_child(node);
-		while (child != NULL)
+		// Small filter to avoid serializing a ton of values that don't relate to desired data
+		if (node->local_name != LXB_TAG_STYLE && node->local_name != LXB_TAG_SCRIPT)
 		{
-			SerializeTextContent(child, extractedText);
-			child = child->next;
+			lxb_dom_node_t* child = lxb_dom_node_first_child(node);
+			while (child != NULL)
+			{
+				SerializeTextContent(child, extractedText);
+				child = child->next;
+			}
 		}
 	}
 }
