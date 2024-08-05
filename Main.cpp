@@ -42,7 +42,7 @@ int main()
     std::cout << std::endl;
 
     // Search for a token
-    std::string query = "computer";
+    std::string query = "Computer";
 
     auto timeThree = high_resolution_clock::now();
     std::vector<std::pair<WebPage*, int>> searchResults = searchEngine.Search(query);
@@ -53,7 +53,7 @@ int main()
     {
         WebPage* webPage = result.first;
         int frequency = result.second;
-        std::cout << "Web Page ID: " << webPage->GetWebPageID() << ", Frequency of search term \"" << query << "\": " << frequency << std::endl;
+        std::cout << "Web Page ID: " << webPage->GetWebPageID() << ", Frequency of (some variant of) search term \"" << query << "\": " << frequency << std::endl;
     }
 
     // Getting number of milliseconds as a double. 

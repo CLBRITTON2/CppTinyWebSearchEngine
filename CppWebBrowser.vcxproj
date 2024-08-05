@@ -102,7 +102,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_HAS_STD_BYTE=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
@@ -134,12 +134,14 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="InvertedIndex.cpp" />
+    <ClCompile Include="RdrLemmatizer.cpp" />
     <ClCompile Include="SearchEngine.cpp" />
     <ClCompile Include="WebPage.cpp" />
     <ClCompile Include="WebPageCrawler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InvertedIndex.h" />
+    <ClInclude Include="RdrLemmatizer.h" />
     <ClInclude Include="SearchEngine.h" />
     <ClInclude Include="WebPage.h" />
     <ClInclude Include="WebPageCrawler.h" />
