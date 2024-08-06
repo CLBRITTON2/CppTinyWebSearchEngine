@@ -37,33 +37,34 @@ static void PrintAllSearchResults(std::unordered_map<WebPage*, std::pair<std::un
     }
 }
 
-//// Print the search result with the highest number of query matches
-//static void PrintSearchResultsWithHigestQueryFrequency(std::vector<std::pair<WebPage*, int>>& searchResults, std::vector<std::string>& queryKeyWords)
-//{
-//    int highestFrequency = 0;
-//    WebPage* highestFrequencyWebPage = nullptr;
-//
-//    for (const auto& result : searchResults)
-//    {
-//        WebPage* webPage = result.first;
-//        int frequency = result.second;
-//
-//        if (frequency > highestFrequency)
-//        {
-//            highestFrequency = frequency;
-//            highestFrequencyWebPage = webPage;
-//        }
-//    }
-//
-//    if (highestFrequencyWebPage != nullptr)
-//    {
-//        std::cout << "Web Page ID: " << highestFrequencyWebPage->GetWebPageID() << ", URL: " << highestFrequencyWebPage->GetWebPageUrl() << ", Highest Frequency of (some variant of) search term \"" << queryKeyWords << "\": " << highestFrequency << std::endl;
-//    }
-//    else
-//    {
-//        std::cout << "No search results found." << std::endl;
-//    }
-//}
+// Print the search result with the highest number of query matches
+static void PrintSearchResultsWithHigestQueryFrequency(std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
+{
+    int highestFrequencyScore = 0;
+    WebPage* highestScoringWebPage = nullptr;
+
+    for (const auto& result : searchResults)
+    {
+        WebPage* currentWebPage = result.first;
+        std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
+        int currentSearchResultFrequencyScore = result.second.second;
+
+        if (currentSearchResultFrequencyScore > highestFrequencyScore)
+        {
+            highestFrequencyScore = currentSearchResultFrequencyScore;
+            highestScoringWebPage = currentWebPage;
+        }
+    }
+
+    if (highestScoringWebPage != nullptr)
+    {
+        std::cout << "Web Page ID: " << highestScoringWebPage->GetWebPageID() << ", Highest total query keyword match with:  " << highestFrequencyScore << " combined occurnces of queried terms on this web page" << std::endl;
+    }
+    else
+    {
+        std::cout << "No search results found." << std::endl;
+    }
+}
 
 int main()
 {
@@ -124,7 +125,7 @@ int main()
 
     PrintAllSearchResults(searchResults);
     std::cout << std::endl;
-    //PrintSearchResultsWithHigestQueryFrequency(searchResults, searchEngine.GetQueryKeyWords());
+    PrintSearchResultsWithHigestQueryFrequency(searchResults);
 
     // Getting number of milliseconds as a double. 
     duration<double, std::milli> msToSearch = timeFour - timeThree;
