@@ -117,6 +117,7 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 	lxb_html_document_destroy(document);
 	lxb_html_parser_destroy(htmlParser);
 
+	//std::cout << extractedText << std::endl;
 	return extractedText;
 }
 

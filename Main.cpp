@@ -4,6 +4,7 @@
 #include <fstream>
 #include <thread>
 #include <algorithm>
+#include <unordered_map>
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::duration;
@@ -16,46 +17,53 @@ static bool CompareSearchResults(const std::pair<WebPage*, int>& pageOne, const 
 }
 
 // Print all search results
-static void PrintAllSearchResults(std::vector<std::pair<WebPage*, int>>& searchResults, std::string& query)
+static void PrintAllSearchResults(std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
 {
-    // Sort the search results based on the occurences of the queried term ascendning
-    std::sort(searchResults.begin(), searchResults.end(), CompareSearchResults);
-
     for (const auto& result : searchResults)
     {
         WebPage* webPage = result.first;
-        int frequency = result.second;
-        std::cout << "Web Page ID: " << webPage->GetWebPageID() << ", Frequency of (some variant of) search term \"" << query << "\": " << frequency << std::endl;
-    }
-}
+        std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
+        int totalFrequencyScore = result.second.second;
 
-// Print the search result with the highest number of query matches
-static void PrintSearchResultsWithHigestQueryFrequency(std::vector<std::pair<WebPage*, int>>& searchResults, std::string& query)
-{
-    int highestFrequency = 0;
-    WebPage* highestFrequencyWebPage = nullptr;
+        std::cout << "Web Page ID: " << webPage->GetWebPageID() << ", Frequency of search terms: " << std::endl;
 
-    for (const auto& result : searchResults)
-    {
-        WebPage* webPage = result.first;
-        int frequency = result.second;
-
-        if (frequency > highestFrequency)
+        for (const auto& keyWordFrequency : keywordFrequencies)
         {
-            highestFrequency = frequency;
-            highestFrequencyWebPage = webPage;
+            std::cout << keyWordFrequency.first << ":" << keyWordFrequency.second << std::endl;
         }
-    }
 
-    if (highestFrequencyWebPage != nullptr)
-    {
-        std::cout << "Web Page ID: " << highestFrequencyWebPage->GetWebPageID() << ", URL: " << highestFrequencyWebPage->GetWebPageUrl() << ", Highest Frequency of (some variant of) search term \"" << query << "\": " << highestFrequency << std::endl;
-    }
-    else
-    {
-        std::cout << "No search results found." << std::endl;
+        std::cout << "Total frequency score: " << totalFrequencyScore << std::endl;
+        std::cout << std::endl;
     }
 }
+
+//// Print the search result with the highest number of query matches
+//static void PrintSearchResultsWithHigestQueryFrequency(std::vector<std::pair<WebPage*, int>>& searchResults, std::vector<std::string>& queryKeyWords)
+//{
+//    int highestFrequency = 0;
+//    WebPage* highestFrequencyWebPage = nullptr;
+//
+//    for (const auto& result : searchResults)
+//    {
+//        WebPage* webPage = result.first;
+//        int frequency = result.second;
+//
+//        if (frequency > highestFrequency)
+//        {
+//            highestFrequency = frequency;
+//            highestFrequencyWebPage = webPage;
+//        }
+//    }
+//
+//    if (highestFrequencyWebPage != nullptr)
+//    {
+//        std::cout << "Web Page ID: " << highestFrequencyWebPage->GetWebPageID() << ", URL: " << highestFrequencyWebPage->GetWebPageUrl() << ", Highest Frequency of (some variant of) search term \"" << queryKeyWords << "\": " << highestFrequency << std::endl;
+//    }
+//    else
+//    {
+//        std::cout << "No search results found." << std::endl;
+//    }
+//}
 
 int main()
 {
@@ -108,15 +116,15 @@ int main()
     std::cout << std::endl;
 
     // Search for a token
-    std::string query = "Computer";
+    std::string query = "Computer system";
 
     auto timeThree = high_resolution_clock::now();
-    std::vector<std::pair<WebPage*, int>> searchResults = searchEngine.Search(query);
+    std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
     auto timeFour = high_resolution_clock::now();
 
-    PrintAllSearchResults(searchResults, query);
+    PrintAllSearchResults(searchResults);
     std::cout << std::endl;
-    PrintSearchResultsWithHigestQueryFrequency(searchResults, query);
+    //PrintSearchResultsWithHigestQueryFrequency(searchResults, searchEngine.GetQueryKeyWords());
 
     // Getting number of milliseconds as a double. 
     duration<double, std::milli> msToSearch = timeFour - timeThree;

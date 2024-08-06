@@ -1,5 +1,6 @@
 #include "SearchEngine.h"
 #include <algorithm>
+#include <set>
 
 void SearchEngine::IndexWebPage(WebPage& webPage)
 {
@@ -8,25 +9,58 @@ void SearchEngine::IndexWebPage(WebPage& webPage)
 	_index.IndexWebPageContent(webPage);
 }
 
-std::vector<std::pair<WebPage*, int>> SearchEngine::Search(std::string& query)
+std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)
 {
-	// Brute force query to lowercase so we can query case agnostic
-	std::transform(query.begin(), query.end(), query.begin(), [](unsigned char c) { return std::tolower(c); });
+	// Define a list of stopwords
+	std::set<std::string> stopwords = { "the", "and", "a", "an", "is", "in", "it", "of", "to" };
 
-	std::vector<std::pair<int, int>> tokenFrequencies = _index.GetTokenFrequency(query);
+	// Split the query into individual words
+	std::istringstream iss(query);
+	std::string word;
 
-	std::vector<std::pair<WebPage*, int>> searchResults;
-
-	// Iterate over tokenFreqeuncies vector
-	for (const auto& result : tokenFrequencies)
+	while (iss >> word)
 	{
-		WebPage* webPage = GetWebPageById(result.first);
-		if (webPage != nullptr)
+		// Brute force each query word to lowercase so we can query case agnostic
+		std::transform(word.begin(), word.end(), word.begin(), [](unsigned char c) { return std::tolower(c); });
+
+		// Strip punctuation as well for now
+		word.erase(std::remove_if(word.begin(), word.end(), [](char c) { return !isalnum(c); }), word.end());
+
+		// Make sure the word isn't a stop word - not super important for querying
+		if (stopwords.find(word) == stopwords.end())
 		{
-			searchResults.push_back(std::make_pair(webPage, result.second));
+			// Not a stop word - add it
+			_queryKeyWords.push_back(word);
+		}
+	}
+
+	std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> searchResults;
+
+	// For each query word in the query words vector
+	for (auto& word : _queryKeyWords)
+	{
+		// Get token frequencies for each query keyword
+		std::vector<std::pair<int, int>> tokenFrequencies = _index.GetTokenFrequency(word);
+
+		for (const auto& result : tokenFrequencies)
+		{
+			WebPage* webPage = GetWebPageById(result.first);
+			if (webPage != nullptr)
+			{
+				// Store the frequency count of the individual word
+				searchResults[webPage].first[word] += result.second;
+
+				// Store the total frequency of all keywords from the query
+				searchResults[webPage].second += result.second;
+			}
 		}
 	}
 	return searchResults;
+}
+
+std::vector<std::string>& SearchEngine::GetQueryKeyWords()
+{
+	return _queryKeyWords;
 }
 
 WebPage* SearchEngine::GetWebPageById(int webPageId)
