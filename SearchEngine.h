@@ -21,4 +21,5 @@ private:
 	std::map<int, std::shared_ptr<WebPage>> _webPages;
 	std::vector<std::string> _queryKeyWords;
 	WebPage* GetWebPageById(int webPageId);
+	void ParseQueryKeywords(std::string& query);
 };

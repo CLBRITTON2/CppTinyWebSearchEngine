@@ -111,7 +111,7 @@ int main()
     std::cout << std::endl;
 
     // Search for a token
-    std::string query = "I want to build a computer";
+    std::string query = "I want to build a my own search engine";
 
     auto timeThree = high_resolution_clock::now();
     std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);

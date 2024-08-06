@@ -11,28 +11,7 @@ void SearchEngine::IndexWebPage(WebPage& webPage)
 
 std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)
 {
-	// Define a list of stopwords
-	std::set<std::string> stopwords = { "the", "and", "a", "an", "is", "in", "it", "of", "to" };
-
-	// Split the query into individual words
-	std::istringstream iss(query);
-	std::string word;
-
-	while (iss >> word)
-	{
-		// Brute force each query word to lowercase so we can query case agnostic
-		std::transform(word.begin(), word.end(), word.begin(), [](unsigned char c) { return std::tolower(c); });
-
-		// Strip punctuation as well for now
-		word.erase(std::remove_if(word.begin(), word.end(), [](char c) { return !isalnum(c); }), word.end());
-
-		// Make sure the word isn't a stop word - not super important for querying
-		if (stopwords.find(word) == stopwords.end())
-		{
-			// Not a stop word - add it
-			_queryKeyWords.push_back(word);
-		}
-	}
+	ParseQueryKeywords(query);
 
 	std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> searchResults;
 
@@ -73,5 +52,31 @@ WebPage* SearchEngine::GetWebPageById(int webPageId)
 	{
 		std::cout << "No web page found returning null pointer - probably going to crash when something tries to access it";
 		return nullptr;
+	}
+}
+
+void SearchEngine::ParseQueryKeywords(std::string& query)
+{
+	// Define a list of stopwords
+	std::set<std::string> stopwords = { "the", "and", "a", "an", "is", "in", "it", "of", "to" };
+
+	// Split the query into individual words
+	std::istringstream iss(query);
+	std::string word;
+
+	while (iss >> word)
+	{
+		// Brute force each query word to lowercase so we can query case agnostic
+		std::transform(word.begin(), word.end(), word.begin(), [](unsigned char c) { return std::tolower(c); });
+
+		// Strip punctuation as well for now
+		word.erase(std::remove_if(word.begin(), word.end(), [](char c) { return !isalnum(c); }), word.end());
+
+		// Make sure the word isn't a stop word - not super important for querying
+		if (stopwords.find(word) == stopwords.end())
+		{
+			// Not a stop word - add it
+			_queryKeyWords.push_back(word);
+		}
 	}
 }
