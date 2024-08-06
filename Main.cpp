@@ -10,12 +10,6 @@ using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 
-static bool CompareSearchResults(const std::pair<WebPage*, int>& pageOne, const std::pair<WebPage*, int>& pageTwo)
-{
-    // Compare the frequency of the queried term page 1 vs page 2
-    return pageOne.second < pageTwo.second;
-}
-
 // Print all search results
 static void PrintAllSearchResults(std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
 {
@@ -117,7 +111,7 @@ int main()
     std::cout << std::endl;
 
     // Search for a token
-    std::string query = "Computer system";
+    std::string query = "I want to build a computer";
 
     auto timeThree = high_resolution_clock::now();
     std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
