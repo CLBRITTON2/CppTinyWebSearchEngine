@@ -23,15 +23,13 @@ std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int
 
 		for (const auto& result : tokenFrequencies)
 		{
-			WebPage* webPage = GetWebPageById(result.first);
-			if (webPage != nullptr)
-			{
-				// Store the frequency count of the individual word
-				searchResults[webPage].first[word] += result.second;
+			WebPage webPage = GetWebPageById(result.first);
 
-				// Store the total frequency of all keywords from the query
-				searchResults[webPage].second += result.second;
-			}
+			// Store the frequency count of the individual word
+			searchResults[&webPage].first[word] += result.second;
+
+			// Store the total frequency of all keywords from the query
+			searchResults[&webPage].second += result.second;
 		}
 	}
 	return searchResults;
@@ -42,16 +40,15 @@ std::vector<std::string>& SearchEngine::GetQueryKeyWords()
 	return _queryKeyWords;
 }
 
-WebPage* SearchEngine::GetWebPageById(int webPageId)
+WebPage& SearchEngine::GetWebPageById(int webPageId)
 {
 	if (_webPages.find(webPageId) != _webPages.end())
 	{
-		return _webPages[webPageId].get();
+		return *_webPages[webPageId];
 	}
 	else
 	{
-		std::cout << "No web page found returning null pointer - probably going to crash when something tries to access it";
-		return nullptr;
+		throw std::runtime_error("No web page found with the given ID");
 	}
 }
 
