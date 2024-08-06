@@ -2,18 +2,18 @@
 #include <algorithm>
 #include <set>
 
-void SearchEngine::IndexWebPage(WebPage& webPage)
+void SearchEngine::IndexWebPage(WebPage webPage)
 {
 	_crawler.Crawl(webPage.GetWebPageUrl(), webPage);
 	_webPages[webPage.GetWebPageID()] = std::make_unique<WebPage>(webPage);
 	_index.IndexWebPageContent(webPage);
 }
 
-std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)
+std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)
 {
 	ParseQueryKeywords(query);
 
-	std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> searchResults;
+	std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> searchResults;
 
 	// For each query word in the query words vector
 	for (auto& word : _queryKeyWords)
@@ -23,13 +23,13 @@ std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int
 
 		for (const auto& result : tokenFrequencies)
 		{
-			WebPage webPage = GetWebPageById(result.first);
+			std::shared_ptr<WebPage> webPage = GetWebPageById(result.first);
 
 			// Store the frequency count of the individual word
-			searchResults[&webPage].first[word] += result.second;
+			searchResults[webPage].first[word] += result.second;
 
 			// Store the total frequency of all keywords from the query
-			searchResults[&webPage].second += result.second;
+			searchResults[webPage].second += result.second;
 		}
 	}
 	return searchResults;
@@ -40,11 +40,11 @@ std::vector<std::string>& SearchEngine::GetQueryKeyWords()
 	return _queryKeyWords;
 }
 
-WebPage& SearchEngine::GetWebPageById(int webPageId)
+std::shared_ptr<WebPage> SearchEngine::GetWebPageById(int webPageId)
 {
 	if (_webPages.find(webPageId) != _webPages.end())
 	{
-		return *_webPages[webPageId];
+		return _webPages[webPageId];
 	}
 	else
 	{

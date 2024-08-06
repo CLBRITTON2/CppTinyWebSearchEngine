@@ -11,11 +11,11 @@ using std::chrono::duration;
 using std::chrono::milliseconds;
 
 // Print all search results
-static void PrintAllSearchResults(std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
+static void PrintAllSearchResults(std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
 {
     for (const auto& result : searchResults)
     {
-        WebPage* webPage = result.first;
+        std::shared_ptr<WebPage> webPage = result.first;
         std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
         int totalFrequencyScore = result.second.second;
 
@@ -32,14 +32,14 @@ static void PrintAllSearchResults(std::unordered_map<WebPage*, std::pair<std::un
 }
 
 // Print the search result with the highest number of query matches
-static void PrintSearchResultsWithHigestQueryFrequency(std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
+static void PrintSearchResultsWithHigestQueryFrequency(std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
 {
     int highestFrequencyScore = 0;
-    WebPage* highestScoringWebPage = nullptr;
+    std::shared_ptr<WebPage> highestScoringWebPage = nullptr;
 
     for (const auto& result : searchResults)
     {
-        WebPage* currentWebPage = result.first;
+        std::shared_ptr<WebPage> currentWebPage = result.first;
         std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
         int currentSearchResultFrequencyScore = result.second.second;
 
@@ -114,7 +114,7 @@ int main()
     std::string query = "I want to build a my own search engine";
 
     auto timeThree = high_resolution_clock::now();
-    std::unordered_map<WebPage*, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
+    std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
     auto timeFour = high_resolution_clock::now();
 
     PrintAllSearchResults(searchResults);
