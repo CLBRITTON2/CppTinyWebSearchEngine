@@ -2,8 +2,14 @@
 #include <algorithm>
 #include <set>
 
+SearchEngine::SearchEngine()
+{
+	_lemmatizer.LoadBinary("english.bin");
+}
+
 void SearchEngine::IndexWebPage(WebPage& webPage)
 {
+	_crawler.SetLemmatizer(&_lemmatizer);
 	_crawler.Crawl(webPage.GetWebPageUrl(), webPage);
 	_index.TokenizeWebPageContent(webPage);
 	_webPageRepository.AddWebPage(webPage.GetWebPageID(), std::make_shared<WebPage>(webPage));
@@ -11,12 +17,12 @@ void SearchEngine::IndexWebPage(WebPage& webPage)
 
 std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)
 {
-	ParseQueryKeywords(query);
-
 	std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> searchResults;
 
-	// For each query word in the query words vector
-	for (auto& word : _queryKeyWords)
+	std::vector<std::string> parsedSearchQuery = _queryParser.Parse(query);
+
+	// For each query word in the parsed query words vector
+	for (auto& word : parsedSearchQuery)
 	{
 		// Get token frequencies for each query keyword
 		std::vector<std::pair<int, int>> tokenFrequencies = _index.GetTokenFrequency(word);
@@ -35,33 +41,3 @@ std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::s
 	return searchResults;
 }
 
-std::vector<std::string>& SearchEngine::GetQueryKeyWords()
-{
-	return _queryKeyWords;
-}
-
-void SearchEngine::ParseQueryKeywords(std::string& query)
-{
-	// Define a list of stopwords
-	std::set<std::string> stopwords = { "the", "and", "a", "an", "is", "in", "it", "of", "to" };
-
-	// Split the query into individual words
-	std::istringstream iss(query);
-	std::string word;
-
-	while (iss >> word)
-	{
-		// Brute force each query word to lowercase so we can query case agnostic
-		std::transform(word.begin(), word.end(), word.begin(), [](unsigned char c) { return std::tolower(c); });
-
-		// Strip punctuation as well for now
-		word.erase(std::remove_if(word.begin(), word.end(), [](char c) { return !isalnum(c); }), word.end());
-
-		// Make sure the word isn't a stop word - not super important for querying
-		if (stopwords.find(word) == stopwords.end())
-		{
-			// Not a stop word - add it
-			_queryKeyWords.push_back(word);
-		}
-	}
-}

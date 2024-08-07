@@ -10,11 +10,6 @@ size_t WebPageCrawler::WriteCallback(void* buffer, size_t bufferSize, size_t num
 	return bufferSize * numberOfBlocks;
 }
 
-WebPageCrawler::WebPageCrawler()
-{
-	_lemmatizer.LoadBinary("C:\\Users\\Chris\\OneDrive\\Documents\\CppWork\\CppWebBrowser\\english.bin");
-}
-
 // Sets a web pages content to an extracted HTML string via http request
 void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 {
@@ -122,6 +117,11 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 	return extractedText;
 }
 
+void WebPageCrawler::SetLemmatizer(RdrLemmatizer* lemmatizer)
+{
+	_lemmatizer = lemmatizer;
+}
+
 void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
 {
 	if (node->type == LXB_DOM_NODE_TYPE_TEXT)
@@ -149,7 +149,7 @@ void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& ext
 		while (iss >> word)
 		{
 			// Lemmatize each word
-			char* lemmatizedWord = _lemmatizer.Lemmatize(word.c_str());
+			char* lemmatizedWord = _lemmatizer->Lemmatize(word.c_str());
 			extractedText += lemmatizedWord;
 			extractedText += " ";
 			delete[] lemmatizedWord;
