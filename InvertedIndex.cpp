@@ -3,7 +3,7 @@
 #include "InvertedIndex.h"
 #include "WebPage.h"
 
-void InvertedIndex::IndexWebPageContent(const WebPage& webPage)
+void InvertedIndex::TokenizeWebPageContent(const WebPage& webPage)
 {
 	int webPageID = webPage.GetWebPageID();
 	std::stringstream stringStream(webPage.GetWebPageContent());
