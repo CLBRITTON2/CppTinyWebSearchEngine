@@ -5,12 +5,12 @@ WebPage::WebPage(const std::string& url, const int webPageID, const std::string&
 {
 }
 
-const std::string WebPage::GetWebPageUrl() const
+const std::string& WebPage::GetWebPageUrl() const
 {
 	return _url;
 }
 
-const std::string WebPage::GetWebPageContent() const
+const std::string& WebPage::GetWebPageContent() const
 {
 	return _webPageContent;
 }

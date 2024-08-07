@@ -53,6 +53,7 @@ static void PrintSearchResultsWithHigestQueryFrequency(std::unordered_map<std::s
     if (highestScoringWebPage != nullptr)
     {
         std::cout << "Web Page ID: " << highestScoringWebPage->GetWebPageID() << ", Highest total query keyword match with:  " << highestFrequencyScore << " combined occurnces of queried terms on this web page" << std::endl;
+        std::cout << "URL: " << highestScoringWebPage->GetWebPageUrl() << std::endl;
     }
     else
     {
