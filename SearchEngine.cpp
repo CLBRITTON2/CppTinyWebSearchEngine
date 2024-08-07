@@ -5,8 +5,8 @@
 void SearchEngine::IndexWebPage(WebPage webPage)
 {
 	_crawler.Crawl(webPage.GetWebPageUrl(), webPage);
-	_webPages[webPage.GetWebPageID()] = std::make_unique<WebPage>(webPage);
-	_index.IndexWebPageContent(webPage);
+	_webPageRepository.AddWebPage(webPage.GetWebPageID(), std::make_shared<WebPage>(webPage));
+	_index.TokenizeWebPageContent(webPage);
 }
 
 std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)
@@ -23,7 +23,7 @@ std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::s
 
 		for (const auto& result : tokenFrequencies)
 		{
-			std::shared_ptr<WebPage> webPage = GetWebPageById(result.first);
+			std::shared_ptr<WebPage> webPage = _webPageRepository.GetWebPageById(result.first);
 
 			// Store the frequency count of the individual word
 			searchResults[webPage].first[word] += result.second;
@@ -38,18 +38,6 @@ std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::s
 std::vector<std::string>& SearchEngine::GetQueryKeyWords()
 {
 	return _queryKeyWords;
-}
-
-std::shared_ptr<WebPage> SearchEngine::GetWebPageById(int webPageId)
-{
-	if (_webPages.find(webPageId) != _webPages.end())
-	{
-		return _webPages[webPageId];
-	}
-	else
-	{
-		throw std::runtime_error("No web page found with the given ID");
-	}
 }
 
 void SearchEngine::ParseQueryKeywords(std::string& query)

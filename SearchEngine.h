@@ -8,6 +8,7 @@
 #include "RdrLemmatizer.h"
 #include <unordered_map>
 #include <memory>
+#include "WebPageRepository.h"
 
 class SearchEngine
 {
@@ -19,8 +20,7 @@ public:
 private:
 	WebPageCrawler _crawler;
 	InvertedIndex _index;
-	std::map<int, std::shared_ptr<WebPage>> _webPages;
+	WebPageRepository _webPageRepository;
 	std::vector<std::string> _queryKeyWords;
-	std::shared_ptr<WebPage> GetWebPageById(int webPageId);
 	void ParseQueryKeywords(std::string& query);
 };
