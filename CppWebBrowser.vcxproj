@@ -134,6 +134,7 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="InvertedIndex.cpp" />
+    <ClCompile Include="QueryParser.cpp" />
     <ClCompile Include="RdrLemmatizer.cpp" />
     <ClCompile Include="SearchEngine.cpp" />
     <ClCompile Include="WebPage.cpp" />
@@ -142,6 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InvertedIndex.h" />
+    <ClInclude Include="QueryParser.h" />
     <ClInclude Include="RdrLemmatizer.h" />
     <ClInclude Include="SearchEngine.h" />
     <ClInclude Include="WebPage.h" />
