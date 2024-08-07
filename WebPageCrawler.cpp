@@ -15,6 +15,7 @@ WebPageCrawler::WebPageCrawler()
 	_lemmatizer.LoadBinary("C:\\Users\\Chris\\OneDrive\\Documents\\CppWork\\CppWebBrowser\\english.bin");
 }
 
+// Sets a web pages content to an extracted HTML string via http request
 void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 {
 	CURL* curlHandle;

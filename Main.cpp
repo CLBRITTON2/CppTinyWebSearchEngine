@@ -79,7 +79,6 @@ int main()
         webPagesFromConfig.push_back(line);
     }
 
-
     // Create an empty vector of threads for each web page
     std::vector<std::thread> threads;
     int webPageID = 1;

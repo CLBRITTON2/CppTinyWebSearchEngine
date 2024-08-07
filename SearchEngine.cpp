@@ -2,11 +2,11 @@
 #include <algorithm>
 #include <set>
 
-void SearchEngine::IndexWebPage(WebPage webPage)
+void SearchEngine::IndexWebPage(WebPage& webPage)
 {
 	_crawler.Crawl(webPage.GetWebPageUrl(), webPage);
-	_webPageRepository.AddWebPage(webPage.GetWebPageID(), std::make_shared<WebPage>(webPage));
 	_index.TokenizeWebPageContent(webPage);
+	_webPageRepository.AddWebPage(webPage.GetWebPageID(), std::make_shared<WebPage>(webPage));
 }
 
 std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)

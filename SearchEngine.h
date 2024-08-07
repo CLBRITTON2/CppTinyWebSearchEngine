@@ -13,7 +13,7 @@
 class SearchEngine
 {
 public:
-	void IndexWebPage(WebPage webPage);
+	void IndexWebPage(WebPage& webPage);
 	std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> Search(std::string& query);
 	std::vector<std::string>& GetQueryKeyWords();
 
