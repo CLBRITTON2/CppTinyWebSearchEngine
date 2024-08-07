@@ -10,6 +10,7 @@ SearchEngine::SearchEngine()
 void SearchEngine::IndexWebPage(WebPage& webPage)
 {
 	_crawler.SetLemmatizer(&_lemmatizer);
+	_queryParser.SetLemmatizer(&_lemmatizer);
 	_crawler.Crawl(webPage.GetWebPageUrl(), webPage);
 	_index.TokenizeWebPageContent(webPage);
 	_webPageRepository.AddWebPage(webPage.GetWebPageID(), std::make_shared<WebPage>(webPage));
