@@ -12,6 +12,6 @@ public:
 	void SetLemmatizer(RdrLemmatizer* lemmatizer);
 private:
 	static size_t WriteCallback(void* buffer, size_t bufferSize, size_t numberOfBlocks, void* userData);
-	void SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText);
+	void SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText, std::ofstream& outputFile);
 	RdrLemmatizer* _lemmatizer;
 };
