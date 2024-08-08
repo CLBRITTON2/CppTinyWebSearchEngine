@@ -100,9 +100,12 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 	std::string extractedText;
 
 	std::ofstream outputFile("all_links.txt");
+	ExtractUrlsFromWebpage(root, outputFile);
+	outputFile.close();
+
 	try
 	{
-		SerializeTextContent(root, extractedText, outputFile);
+		SerializeTextContent(root, extractedText);
 	}
 	catch (const std::exception& e)
 	{
@@ -112,7 +115,6 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 		return "";
 	}
 
-	outputFile.close();
 	// Clean up
 	lxb_html_document_destroy(document);
 	lxb_html_parser_destroy(htmlParser);
@@ -125,38 +127,8 @@ void WebPageCrawler::SetLemmatizer(RdrLemmatizer* lemmatizer)
 	_lemmatizer = lemmatizer;
 }
 
-void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText, std::ofstream& outputFile)
+void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
 {
-	if (node->local_name == LXB_TAG_A) // Check for anchor tags (links)
-	{
-		lxb_dom_element_t* element = lxb_dom_interface_element(node);
-		const lxb_char_t* href = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"href", 4, NULL);
-		if (href)
-		{
-			std::string href_str{ (const char*)href, strlen((const char*)href) };
-
-			// Check if the link starts with a valid scheme
-			if (href_str.find("http://") == 0 || href_str.find("https://") == 0)
-			{
-				// Check if it's a Wikipedia page
-				if (href_str.find("wikipedia.org") != std::string::npos)
-				{
-					// Check if it's an English Wikipedia page
-					if (href_str.find("https://en.wikipedia.org/") == 0)
-					{
-						std::cout << "English Wikipedia page: " << href_str << std::endl;
-						outputFile << href_str << std::endl; // Write the English Wikipedia link to the file
-					}
-				}
-				else
-				{
-					std::cout << "Non-Wikipedia page: " << href_str << std::endl;
-					outputFile << href_str << std::endl; // Write the non-Wikipedia link to the file
-				}
-			}
-		}
-	}
-
 	if (node->type == LXB_DOM_NODE_TYPE_TEXT)
 	{
 		size_t len;
@@ -196,9 +168,52 @@ void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& ext
 			lxb_dom_node_t* child = lxb_dom_node_first_child(node);
 			while (child != NULL)
 			{
-				SerializeTextContent(child, extractedText, outputFile);
+				SerializeTextContent(child, extractedText);
 				child = child->next;
 			}
+		}
+	}
+}
+
+void WebPageCrawler::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstream& outputFile)
+{
+	if (node->local_name == LXB_TAG_A) // Check for anchor tags (links)
+	{
+		lxb_dom_element_t* element = lxb_dom_interface_element(node);
+		const lxb_char_t* href = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"href", 4, NULL);
+		if (href)
+		{
+			std::string href_str{ (const char*)href, strlen((const char*)href) };
+
+			// Check if the link starts with a valid scheme
+			if (href_str.find("http://") == 0 || href_str.find("https://") == 0)
+			{
+				// Check if it's a Wikipedia page
+				if (href_str.find("wikipedia.org") != std::string::npos)
+				{
+					// Check if it's an English Wikipedia page
+					if (href_str.find("https://en.wikipedia.org/") == 0)
+					{
+						std::cout << "English Wikipedia page: " << href_str << std::endl;
+						outputFile << href_str << std::endl; // Write the English Wikipedia link to the file
+					}
+				}
+				else
+				{
+					std::cout << "Non-Wikipedia page: " << href_str << std::endl;
+					outputFile << href_str << std::endl; // Write the non-Wikipedia link to the file
+				}
+			}
+		}
+	}
+	else
+	{
+		// Recursively search all child nodes
+		lxb_dom_node_t* child = lxb_dom_node_first_child(node);
+		while (child != NULL)
+		{
+			ExtractUrlsFromWebpage(child, outputFile);
+			child = child->next;
 		}
 	}
 }
