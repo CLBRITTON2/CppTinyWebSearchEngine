@@ -8,7 +8,7 @@ class WebPage
 private:
 	std::string _url;
 	std::string _webPageContent;
-	 int _webPageID;
+	int _webPageID;
 
 	friend class boost::serialization::access;
 	template<class Archive>

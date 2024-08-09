@@ -18,48 +18,18 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="InvertedIndex.cpp">
+    <ClCompile Include="..\CppWebBrowser\WebPageProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WebPageProcessor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WebPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SearchEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RdrLemmatizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WebPageRepository.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="QueryParser.cpp">
+    <ClCompile Include="WebCrawler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InvertedIndex.h">
+    <ClInclude Include="..\CppWebBrowser\WebPageProcessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WebPageProcessor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WebPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SearchEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RdrLemmatizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WebPageRepository.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="QueryParser.h">
+    <ClInclude Include="WebCrawler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

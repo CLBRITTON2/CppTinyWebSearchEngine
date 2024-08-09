@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{e81e8abd-517d-4b08-9b47-e5447a7e16a6}</ProjectGuid>
-    <RootNamespace>CppWebBrowser</RootNamespace>
+    <ProjectGuid>{dfd356d6-df92-40dd-ba9f-9a5df2f8e17f}</ProjectGuid>
+    <RootNamespace>WebCrawler</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -102,17 +102,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_HAS_STD_BYTE=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\vcpkg\vcpkg-2024.07.12\installed\x64-windows\lib\lexbor.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -121,9 +118,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_HAS_STD_BYTE=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,23 +129,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\CppWebBrowser\WebPageProcessor.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="InvertedIndex.cpp" />
-    <ClCompile Include="QueryParser.cpp" />
-    <ClCompile Include="RdrLemmatizer.cpp" />
-    <ClCompile Include="SearchEngine.cpp" />
-    <ClCompile Include="WebPage.cpp" />
-    <ClCompile Include="WebPageProcessor.cpp" />
-    <ClCompile Include="WebPageRepository.cpp" />
+    <ClCompile Include="WebCrawler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InvertedIndex.h" />
-    <ClInclude Include="QueryParser.h" />
-    <ClInclude Include="RdrLemmatizer.h" />
-    <ClInclude Include="SearchEngine.h" />
-    <ClInclude Include="WebPage.h" />
-    <ClInclude Include="WebPageProcessor.h" />
-    <ClInclude Include="WebPageRepository.h" />
+    <ClInclude Include="..\CppWebBrowser\WebPageProcessor.h" />
+    <ClInclude Include="WebCrawler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
