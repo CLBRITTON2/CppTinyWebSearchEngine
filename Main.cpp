@@ -64,6 +64,8 @@ int main()
 	SearchEngine searchEngine;
 	try
 	{
+		std::cout << "Loading binaries..." << std::endl;
+		std::cout << std::endl;
 		searchEngine.LoadRepositoryFromBinaryFile("WebPages");
 	}
 	catch (const boost::archive::archive_exception& e) 
@@ -79,50 +81,50 @@ int main()
 	_____________________________________________________________________________________________________________________________________________________________
 	*/
 
-	std::vector<std::string> webPagesFromConfig;
-	std::string line;
-	std::ifstream inFile("WebPages.txt");
-	if (!inFile.is_open())
-	{
-	    std::cerr << "Failed to open config file." << std::endl;
-	    return -1;
-	}
+	//std::vector<std::string> webPagesFromConfig;
+	//std::string line;
+	//std::ifstream inFile("WebPages.txt");
+	//if (!inFile.is_open())
+	//{
+	//    std::cerr << "Failed to open config file." << std::endl;
+	//    return -1;
+	//}
 
-	// Add each URL from config file to a collection
-	while (getline(inFile, line))
-	{
-	    webPagesFromConfig.push_back(line);
-	}
+	//// Add each URL from config file to a collection
+	//while (getline(inFile, line))
+	//{
+	//    webPagesFromConfig.push_back(line);
+	//}
 
-	// Create an empty vector of threads for each web page
-	std::vector<std::thread> threads;
-	int webPageID = 1;
-	auto timeOne = high_resolution_clock::now();
+	//// Create an empty vector of threads for each web page
+	//std::vector<std::thread> threads;
+	//int webPageID = 1;
+	//auto timeOne = high_resolution_clock::now();
 
-	// Basically a C# foreach loop going over each line in the txt file containing urls
-	for (auto& line : webPagesFromConfig)
-	{
-	    // Create a thread for each web page so we can index every page concurrently, adds the thread to threads vector
-	    // This is a combination of AI/Stack overflow 
-	    // Might have to look at refactoring this as the project scales because we'll run out of threads
-	    threads.emplace_back([&searchEngine, &line, webPageID]() {
-	        WebPage webPage(line, webPageID);
-	        searchEngine.IndexWebPage(webPage);
-	        });
-	    webPageID++;
-	}
+	//// Basically a C# foreach loop going over each line in the txt file containing urls
+	//for (auto& line : webPagesFromConfig)
+	//{
+	//    // Create a thread for each web page so we can index every page concurrently, adds the thread to threads vector
+	//    // This is a combination of AI/Stack overflow 
+	//    // Might have to look at refactoring this as the project scales because we'll run out of threads
+	//    threads.emplace_back([&searchEngine, &line, webPageID]() {
+	//        WebPage webPage(line, webPageID);
+	//        searchEngine.IndexWebPage(webPage);
+	//        });
+	//    webPageID++;
+	//}
 
-	for (auto& thread : threads) 
-	{
-	    thread.join();
-	}
+	//for (auto& thread : threads) 
+	//{
+	//    thread.join();
+	//}
 
-	auto timeTwo = high_resolution_clock::now();
+	//auto timeTwo = high_resolution_clock::now();
 
-	// Getting number of milliseconds as a double. 
-	duration<double, std::milli> msToIndex = timeTwo - timeOne;
-	std::cout << "It took " << msToIndex.count() << " ms to get and index all web pages" << std::endl;
-	std::cout << std::endl;
+	//// Getting number of milliseconds as a double. 
+	//duration<double, std::milli> msToIndex = timeTwo - timeOne;
+	//std::cout << "It took " << msToIndex.count() << " ms to get and index all web pages" << std::endl;
+	//std::cout << std::endl;
 
 /*
 _____________________________________________________________________________________________________________________________________________________________
@@ -132,22 +134,32 @@ ________________________________________________________________________________
 
 
 
+	while (true)
+	{
+		std::string query{""};
+		std::cout << "Enter your search query (or 'exit' to quit): ";
+		std::getline(std::cin, query);
 
-	std::string query = "I want to build a my own search engine";
+		if (query == "exit")
+		{
+			break;
+		}
 
-	auto timeThree = high_resolution_clock::now();
-	std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
-	auto timeFour = high_resolution_clock::now();
+		auto timeThree = high_resolution_clock::now();
+		std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
+		auto timeFour = high_resolution_clock::now();
 
-	PrintAllSearchResults(searchResults);
-	std::cout << std::endl;
-	PrintSearchResultsWithHigestQueryFrequency(searchResults);
+		//PrintAllSearchResults(searchResults);
+		std::cout << std::endl;
+		PrintSearchResultsWithHigestQueryFrequency(searchResults);
 
-	// Getting number of milliseconds as a double. 
-	duration<double, std::milli> msToSearch = timeFour - timeThree;
-	std::cout << std::endl;
-	std::cout << "It took " << msToSearch.count() << " ms to run the search query against the index" << std::endl;
+		// Getting number of milliseconds as a double. 
+		duration<double, std::milli> msToSearch = timeFour - timeThree;
+		std::cout << std::endl;
+		std::cout << "It took " << msToSearch.count() << " ms to run the search query against the index" << std::endl;
+		std::cout << std::endl;
 
+	}
 	searchEngine.SaveRepositoryToBinaryFile("WebPages");
 	return 0;
 }
