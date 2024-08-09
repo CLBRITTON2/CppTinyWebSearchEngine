@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <string>
 #include "RdrLemmatizer.h"
 
 class QueryParser

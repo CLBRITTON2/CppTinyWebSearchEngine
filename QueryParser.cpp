@@ -1,8 +1,5 @@
 #include "QueryParser.h"
-#include <iostream>
-#include <fstream>
 #include <algorithm>
-#include <sstream>
 
 void QueryParser::LoadStopWords(std::string_view fileName)
 {

@@ -1,19 +1,37 @@
 #include "SearchEngine.h"
-#include <algorithm>
-#include <set>
 
 SearchEngine::SearchEngine()
 {
 	_lemmatizer.LoadBinary("english.bin");
 }
 
+void SearchEngine::SaveRepositoryToBinaryFile(const std::string& fileName)
+{
+	_webPageRepository.SaveToBinaryFile(fileName + ".repository");
+	_index.SaveToBinaryFile(fileName + ".index");
+}
+
+void SearchEngine::LoadRepositoryFromBinaryFile(const std::string& fileName)
+{
+	_webPageRepository.LoadFromBinaryFile(fileName + ".repository");
+	_index.LoadFromBinaryFile(fileName + ".index");
+}
+
 void SearchEngine::IndexWebPage(WebPage& webPage)
 {
-	_crawler.SetLemmatizer(&_lemmatizer);
+	// Check to see if we've already indexed this page - no need for duplicates
+	if (_webPageRepository.IsWebPagedIndexed(webPage.GetWebPageID()))
+	{
+		// std::cout << "Web Page ID: " << webPage.GetWebPageID() << ", has already been indexed - moving on..." << std::endl;
+		return;
+	}
+
+	// Page hasn't been indexed - process it
+	_webPageProcessor.SetLemmatizer(&_lemmatizer);
 	_queryParser.SetLemmatizer(&_lemmatizer);
-	_crawler.Crawl(webPage.GetWebPageUrl(), webPage);
+	_webPageProcessor.ProcessWebPage(webPage);
 	_index.TokenizeWebPageContent(webPage);
-	_webPageRepository.AddWebPage(webPage.GetWebPageID(), std::make_shared<WebPage>(webPage));
+	_webPageRepository.AddWebPage(webPage);
 }
 
 std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)

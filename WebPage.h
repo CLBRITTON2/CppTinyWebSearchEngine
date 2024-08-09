@@ -1,14 +1,26 @@
 #pragma once
 #include <string>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 class WebPage
 {
-private: 
+private:
 	std::string _url;
 	std::string _webPageContent;
-	const int _webPageID;
+	 int _webPageID;
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& _url;
+		ar& _webPageID;
+		ar& _webPageContent;
+	}
 
 public:
+	WebPage();
 	WebPage(const std::string& url, int webPageID, const std::string& webPageContent = "");
 	const std::string& GetWebPageUrl() const;
 	const std::string& GetWebPageContent() const;

@@ -21,7 +21,7 @@
     <ClCompile Include="InvertedIndex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WebPageCrawler.cpp">
+    <ClCompile Include="WebPageProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WebPage.cpp">
@@ -44,7 +44,7 @@
     <ClInclude Include="InvertedIndex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WebPageCrawler.h">
+    <ClInclude Include="WebPageProcessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WebPage.h">

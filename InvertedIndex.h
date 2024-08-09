@@ -9,12 +9,22 @@ public:
 	// Breaks a file down into individual words and maps them according to file ID
 	void TokenizeWebPageContent(const WebPage& webPage);
 
-	// Initial implementation will store the page Id and number of occurences of each queried word
-	// TODO: Switch to a proximity index to store words and position to allow query phrases instead of just words 
-
 	// Returns a vector containing the page ID paired with the number of times the queried word appeared in the page
 	std::vector<std::pair<int, int>> GetTokenFrequency(const std::string& query);
 
+	// Load the inverted index from a binary file
+	void LoadFromBinaryFile(const std::string& filename);
+
+	// Save the inverted index to a binary file
+	void SaveToBinaryFile(const std::string& filename);
+
 private:
 	std::map<std::string, std::map<int, int>> _index;
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& _index;
+	}
 };

@@ -1,23 +1,35 @@
-#include <sstream>
-#include <iostream>
-#include "WebPageCrawler.h"
+#include "WebPageProcessor.h"
 #include <curl/curl.h>
-#include <lexbor/html/html.h>
-#include <lexbor/url/url.h>
-#include <algorithm>
 
-size_t WebPageCrawler::WriteCallback(void* buffer, size_t bufferSize, size_t numberOfBlocks, void* userData)
+size_t WebPageProcessor::WriteCallback(void* buffer, size_t bufferSize, size_t numberOfBlocks, void* userData)
 {
 	((std::string*)userData)->append((char*)buffer, bufferSize * numberOfBlocks);
 	return bufferSize * numberOfBlocks;
 }
 
 // Sets a web pages content to an extracted HTML string via http request
-void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
+void WebPageProcessor::ProcessWebPage(WebPage& webPage)
+{
+	// Get the web page URL
+	std::string webPageUrl = webPage.GetWebPageUrl();
+
+	// Get the contents of a web page and place it in raw html string
+	std::string rawHtmlString = GetContentFromHttpRequest(webPageUrl, webPage);
+
+	// Pass the raw html string to html extractor which Extracts URLS and serializes all words on a page
+	// It's ugly and violates SRP - but the memory management with LXB library would be atrociouis without this - maybe refactor later
+	std::string extractedText = ExtractTextFromHtml(rawHtmlString);
+
+	// Set the current web page content to the stripped text representation of the web page
+	webPage.SetWebPageContent(extractedText);
+}
+
+// HTTP request returns a massive string of unserialized webpage HTML data
+std::string WebPageProcessor::GetContentFromHttpRequest(const std::string& webPageUrl, WebPage& webPage)
 {
 	CURL* curlHandle;
 	CURLcode httpResponseCode;
-	std::string webPageContent;
+	std::string webPageContent = "";
 
 	// Create the cURL handle and validate it
 	curlHandle = curl_easy_init();
@@ -28,13 +40,13 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 		if (setOptResult != CURLE_OK)
 		{
 			std::cerr << "curl_easy_setopt failed: " << curl_easy_strerror(setOptResult) << std::endl;
-			return;
+			return "";
 		}
 
 		// Handle the recieved data - append the recieved data to the webPageContent string
 		curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, WriteCallback);
 
-		// Set the write data pointer to the webPageHtmlContent string
+		// Set the write data pointer to the webPageContent string
 		curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, &webPageContent);
 
 		// Execute the cURL request
@@ -44,12 +56,12 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 		if (httpResponseCode != CURLE_OK)
 		{
 			std::cout << "cURL error: " << curl_easy_strerror(httpResponseCode);
+			return "";
 		}
 		else
 		{
-			// Good response extract text from the HTML content to populate the web page content
-			std::string extractedText = ExtractTextFromHtml(webPageContent);
-			webPage.SetWebPageContent(extractedText);
+			// Good response return the content
+			return webPageContent;
 		}
 
 		curl_easy_cleanup(curlHandle);
@@ -57,10 +69,11 @@ void WebPageCrawler::Crawl(const std::string& webPageUrl, WebPage& webPage)
 	else
 	{
 		std::cout << "cURL initialization failed" << std::endl;
+		return "";
 	}
 }
 
-std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageContent)
+std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageContent)
 {
 	lxb_status_t status;
 	lxb_html_parser_t* htmlParser;
@@ -70,7 +83,7 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 	status = lxb_html_parser_init(htmlParser);
 	if (status != LXB_STATUS_OK)
 	{
-		return "";
+		lxb_html_parser_destroy(htmlParser);
 	}
 
 	// Parse HTML 
@@ -78,31 +91,31 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 	if (document == NULL)
 	{
 		std::cout << "Failed to parse HTML\n" << std::endl;;
-		return "";
+		CleanupLXB(htmlParser, document);
 	}
 
 	status = lxb_html_parse_chunk_process(htmlParser, (const lxb_char_t*)webPageContent.c_str(), webPageContent.length());
 	if (status != LXB_STATUS_OK)
 	{
 		std::cout << "Failed to parse HTML chunk\n" << std::endl;
-		return "";
+		CleanupLXB(htmlParser, document);
 	}
 
 	status = lxb_html_parse_chunk_end(htmlParser);
 	if (status != LXB_STATUS_OK)
 	{
 		std::cout << "Failed to parse HTML\n" << std::endl;
-		return "";
+		CleanupLXB(htmlParser, document);
 	}
 
 	lxb_dom_node_t* root = lxb_dom_interface_node(document);
 
-	std::string extractedText;
-
+	// Extract and write all discovered URLs to a txt file
 	std::ofstream outputFile("all_links.txt");
 	ExtractUrlsFromWebpage(root, outputFile);
 	outputFile.close();
 
+	std::string extractedText{ "" };
 	try
 	{
 		SerializeTextContent(root, extractedText);
@@ -110,24 +123,15 @@ std::string WebPageCrawler::ExtractTextFromHtml(const std::string& webPageConten
 	catch (const std::exception& e)
 	{
 		std::cout << "Error serializing text content: " << e.what() << std::endl;
-		lxb_html_document_destroy(document);
-		lxb_html_parser_destroy(htmlParser);
-		return "";
 	}
 
-	// Clean up
-	lxb_html_document_destroy(document);
-	lxb_html_parser_destroy(htmlParser);
+	// Clean up 
+	CleanupLXB(htmlParser, document);
 
 	return extractedText;
 }
 
-void WebPageCrawler::SetLemmatizer(RdrLemmatizer* lemmatizer)
-{
-	_lemmatizer = lemmatizer;
-}
-
-void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
+void WebPageProcessor::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
 {
 	if (node->type == LXB_DOM_NODE_TYPE_TEXT)
 	{
@@ -175,7 +179,7 @@ void WebPageCrawler::SerializeTextContent(lxb_dom_node_t* node, std::string& ext
 	}
 }
 
-void WebPageCrawler::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstream& outputFile)
+void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstream& outputFile)
 {
 	if (node->local_name == LXB_TAG_A) // Check for anchor tags (links)
 	{
@@ -194,13 +198,13 @@ void WebPageCrawler::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstream&
 					// Check if it's an English Wikipedia page
 					if (href_str.find("https://en.wikipedia.org/") == 0)
 					{
-						std::cout << "English Wikipedia page: " << href_str << std::endl;
+						//std::cout << "English Wikipedia page: " << href_str << std::endl;
 						outputFile << href_str << std::endl; // Write the English Wikipedia link to the file
 					}
 				}
 				else
 				{
-					std::cout << "Non-Wikipedia page: " << href_str << std::endl;
+					//std::cout << "Non-Wikipedia page: " << href_str << std::endl;
 					outputFile << href_str << std::endl; // Write the non-Wikipedia link to the file
 				}
 			}
@@ -216,4 +220,23 @@ void WebPageCrawler::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstream&
 			child = child->next;
 		}
 	}
+}
+
+void WebPageProcessor::CleanupLXB(lxb_html_parser_t* htmlParser, lxb_html_document_t* document)
+{
+	if (htmlParser != NULL)
+	{
+		lxb_html_parser_destroy(htmlParser);
+		htmlParser = nullptr;
+	}
+	if (document != NULL) 
+	{
+		lxb_html_document_destroy(document);
+		document = nullptr;
+	}
+}
+
+void WebPageProcessor::SetLemmatizer(RdrLemmatizer* lemmatizer)
+{
+	_lemmatizer = lemmatizer;
 }

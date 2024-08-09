@@ -123,6 +123,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_HAS_STD_BYTE=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,7 +139,7 @@
     <ClCompile Include="RdrLemmatizer.cpp" />
     <ClCompile Include="SearchEngine.cpp" />
     <ClCompile Include="WebPage.cpp" />
-    <ClCompile Include="WebPageCrawler.cpp" />
+    <ClCompile Include="WebPageProcessor.cpp" />
     <ClCompile Include="WebPageRepository.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -147,7 +148,7 @@
     <ClInclude Include="RdrLemmatizer.h" />
     <ClInclude Include="SearchEngine.h" />
     <ClInclude Include="WebPage.h" />
-    <ClInclude Include="WebPageCrawler.h" />
+    <ClInclude Include="WebPageProcessor.h" />
     <ClInclude Include="WebPageRepository.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
