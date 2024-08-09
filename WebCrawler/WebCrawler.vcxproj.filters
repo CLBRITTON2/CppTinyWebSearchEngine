@@ -18,18 +18,18 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\CppWebBrowser\WebPageProcessor.cpp">
+    <ClCompile Include="WebCrawler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WebCrawler.cpp">
+    <ClCompile Include="WebPageProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\CppWebBrowser\WebPageProcessor.h">
+    <ClInclude Include="WebCrawler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WebCrawler.h">
+    <ClInclude Include="WebPageProcessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

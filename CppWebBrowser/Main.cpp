@@ -160,7 +160,6 @@ ________________________________________________________________________________
 		std::cout << std::endl;
 
 	}
-	searchEngine.SaveRepositoryToBinaryFile("WebPages");
 	return 0;
 }
 
