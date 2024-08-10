@@ -110,7 +110,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\vcpkg\vcpkg-2024.07.12\installed\x64-windows\lib\lexbor.lib;C:\Users\Chris\OneDrive\Documents\CppWork\SearchEngineSharedLibrary\x64\Debug\SearchEngineSharedLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Users\Chris\OneDrive\Documents\CppWork\SearchEngineSharedLibrary\x64\Debug\SearchEngineSharedLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

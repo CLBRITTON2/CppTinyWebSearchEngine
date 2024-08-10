@@ -120,6 +120,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Users\Chris\OneDrive\Documents\CppWork\SearchEngineSharedLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -151,6 +152,11 @@ xcopy /y /i "$(ProjectDir)*.hpp" "$(TargetDir)include"</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir "$(TargetDir)include"
+xcopy /y /i "$(ProjectDir)*.h" "$(TargetDir)include"
+xcopy /y /i "$(ProjectDir)*.hpp" "$(TargetDir)include"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />

@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 #include <SearchEngineSharedLibrary.h>
 #include "WebPageProcessor.h"
 
