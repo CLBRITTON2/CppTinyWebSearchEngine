@@ -26,7 +26,7 @@ std::shared_ptr<WebPage> WebPageRepository::GetWebPageById(int webPageID)
 	}
 }
 
-bool WebPageRepository::IsWebPagedIndexed(std::string& webPageUrl)
+bool WebPageRepository::IsWebPagedIndexed(const std::string& webPageUrl)
 {
 	// Probably going to get rough as the number of webpages grows - refactor later
 	for (const auto& webPage : _webPages)

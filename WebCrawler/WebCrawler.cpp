@@ -15,7 +15,7 @@ void WebCrawler::LoadRepositoryFromBinaryFile(const std::string& fileName)
 void WebCrawler::IndexWebPage(WebPage& webPage)
 {
 	// Check to see if we've already indexed this page - no need for duplicates
-	if (_webPageRepository.IsWebPagedIndexed(webPage.GetWebPageID()))
+	if (_webPageRepository.IsWebPagedIndexed(webPage.GetWebPageUrl()))
 	{
 		// std::cout << "Web Page ID: " << webPage.GetWebPageID() << ", has already been indexed - moving on..." << std::endl;
 		return;

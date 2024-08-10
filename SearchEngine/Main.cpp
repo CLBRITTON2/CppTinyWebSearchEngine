@@ -91,6 +91,7 @@ int main()
 		//PrintAllSearchResults(searchResults);
 		std::cout << std::endl;
 		PrintSearchResultsWithHigestQueryFrequency(searchResults);
+		PrintAllSearchResults(searchResults);
 
 		// Getting number of milliseconds as a double. 
 		duration<double, std::milli> msToSearch = timeFour - timeThree;

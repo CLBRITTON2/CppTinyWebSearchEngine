@@ -26,5 +26,5 @@ public:
 	void SaveToBinaryFile(const std::string& filename);
 
 	// Check to see whether or not a web page has been indexed
-	bool IsWebPagedIndexed(std::string& webPageUrl);
+	bool IsWebPagedIndexed(const std::string& webPageUrl);
 };
