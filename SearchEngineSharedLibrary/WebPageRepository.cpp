@@ -15,20 +15,28 @@ void WebPageRepository::AddWebPage(WebPage& webPage)
 
 std::shared_ptr<WebPage> WebPageRepository::GetWebPageById(int webPageID)
 {
-    auto iterator = _webPages.find(webPageID);
-    if (iterator != _webPages.end()) 
-    {
-        return iterator->second;
-    }
-    else
-    {
-        throw std::runtime_error("Web page not found");
-    }
+	auto iterator = _webPages.find(webPageID);
+	if (iterator != _webPages.end())
+	{
+		return iterator->second;
+	}
+	else
+	{
+		throw std::runtime_error("Web page not found");
+	}
 }
 
-bool WebPageRepository::IsWebPagedIndexed(int webPageID)
+bool WebPageRepository::IsWebPagedIndexed(std::string& webPageUrl)
 {
-	return _webPages.find(webPageID) != _webPages.end();
+	// Probably going to get rough as the number of webpages grows - refactor later
+	for (const auto& webPage : _webPages)
+	{
+		if (webPage.second->GetWebPageUrl() == webPageUrl)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 //Save the _webPages map to binary
@@ -77,18 +85,13 @@ void WebPageRepository::SaveToBinaryFile(const std::string& fileName)
 // Populate the _webPages map from binary
 void WebPageRepository::LoadFromBinaryFile(const std::string& fileName)
 {
-    if (!std::filesystem::exists(fileName)) 
-    {
-        std::cout << "File not found: " + fileName << std::endl;
-        return;
-    }
+	if (!std::filesystem::exists(fileName))
+	{
+		std::cout << "File not found: " + fileName << std::endl;
+		return;
+	}
 
-    std::ifstream inFile(fileName, std::ios::binary);
-    if (!inFile.is_open())
-    {
-        throw std::runtime_error("Failed to open file for reading: " + fileName);
-    }
-
-    boost::archive::binary_iarchive ia(inFile);
-    ia >> _webPages;
+	std::ifstream inFile(fileName, std::ios::binary);
+	boost::archive::binary_iarchive ia(inFile);
+	ia >> _webPages;
 }

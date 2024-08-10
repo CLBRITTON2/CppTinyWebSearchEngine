@@ -1,11 +1,11 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/map.hpp>
-#include <iostream>
-#include <fstream>
-#include <filesystem>
 #include "InvertedIndex.h"
 #include "WebPage.h"
+#include <fstream>
+#include <iostream>
+#include <filesystem>
 
 void InvertedIndex::TokenizeWebPageContent(const WebPage& webPage)
 {
