@@ -19,6 +19,13 @@ void WebCrawler::SetNumberOfPagesToScrape(int numberOfPagesToScrape)
 	_numberOfPagesToScrape = numberOfPagesToScrape;
 }
 
+// Synchronize multi threaded logging - only required for printing in diff threads
+void WebCrawler::Log(const std::string& message)
+{
+	std::lock_guard<std::mutex> lock(_logMutex);
+	std::cout << message << std::endl;
+}
+
 bool WebCrawler::IndexWebPage(WebPage& webPage)
 {
 	// Dont try processing a page if we've already hit our predefined max
@@ -31,7 +38,7 @@ bool WebCrawler::IndexWebPage(WebPage& webPage)
 	if (_webPageRepository.IsWebPagedIndexed(webPage.GetWebPageUrl()))
 	{
 		// We don't want to incement the web page ID if the page is already indexed
-		std::cout << "Web Page: " << webPage.GetWebPageUrl() << ", has already been indexed - moving on..." << std::endl;
+		Log("Web Page: " + webPage.GetWebPageUrl() + ", has already been indexed - moving on...");
 		return false;
 	}
 	else
@@ -53,7 +60,7 @@ WebCrawler::WebCrawler()
 
 void WebCrawler::Crawl()
 {
-	std::cout << "Crawler started..." << std::endl;
+	Log("Crawler started...");
 
 	std::vector<std::thread> threads;
 	int batchSize = 100;
@@ -91,13 +98,13 @@ void WebCrawler::Crawl()
 							if (_totalPagesScraped < _numberOfPagesToScrape) 
 							{
 								_totalPagesScraped++;
-								std::cout << "Total number of pages scraped update: " << _totalPagesScraped << std::endl;
+								Log("Total number of pages scraped update: " + std::to_string(_totalPagesScraped));
 							}
 						}
 					}
 					catch (const std::exception& e)
 					{
-						std::cerr << "Error processing web page: " << e.what() << std::endl;
+						Log("Error processing web page: " + std::string(e.what()));
 					}
 				});
 
@@ -137,5 +144,5 @@ void WebCrawler::Crawl()
 			threads.clear();
 		}
 	}
-	std::cout << "Number of web pages scraped: " << _totalPagesScraped << std::endl;
+	Log("Number of web pages scraped: " + std::to_string(_totalPagesScraped));
 }
