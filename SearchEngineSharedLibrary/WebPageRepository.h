@@ -3,16 +3,6 @@
 
 class WebPageRepository
 {
-private:
-	std::map<int, std::shared_ptr<WebPage>> _webPages;
-
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int version)
-	{
-		ar& _webPages;
-	}
-
 public:
 	// Add a web page to the web page repoistory
 	void AddWebPage(WebPage& webPage);
@@ -27,4 +17,14 @@ public:
 
 	// Check to see whether or not a web page has been indexed
 	bool IsWebPagedIndexed(const std::string& webPageUrl);
+
+private:
+	std::map<int, std::shared_ptr<WebPage>> _webPages;
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& _webPages;
+	}
 };

@@ -10,7 +10,10 @@
 void WebPageRepository::AddWebPage(WebPage& webPage)
 {
 	int webPageID = webPage.GetWebPageID();
+	std::string url = webPage.GetWebPageUrl();
 	_webPages[webPageID] = std::make_shared<WebPage>(webPage);
+
+	std::cout << "Webpage added to repository: " << url << std::endl;
 }
 
 std::shared_ptr<WebPage> WebPageRepository::GetWebPageById(int webPageID)
@@ -78,8 +81,6 @@ void WebPageRepository::SaveToBinaryFile(const std::string& fileName)
 	{
 		std::cerr << "Error writing to file" << std::endl;
 	}
-
-	std::cout << "Save to binary: repository - end" << std::endl;
 }
 
 // Populate the _webPages map from binary

@@ -24,15 +24,19 @@ std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::s
 		// Get token frequencies for each query keyword
 		std::vector<std::pair<int, int>> tokenFrequencies = _index.GetTokenFrequency(word);
 
-		for (const auto& result : tokenFrequencies)
+		// Don't deref a null pointer 
+		if (!tokenFrequencies.empty())
 		{
-			std::shared_ptr<WebPage> webPage = _webPageRepository.GetWebPageById(result.first);
+			for (const auto& result : tokenFrequencies)
+			{
+				std::shared_ptr<WebPage> webPage = _webPageRepository.GetWebPageById(result.first);
 
-			// Store the frequency count of the individual word
-			searchResults[webPage].first[word] += result.second;
+				// Store the frequency count of the individual word
+				searchResults[webPage].first[word] += result.second;
 
-			// Store the total frequency of all keywords from the query
-			searchResults[webPage].second += result.second;
+				// Store the total frequency of all keywords from the query
+				searchResults[webPage].second += result.second;
+			}
 		}
 	}
 	return searchResults;

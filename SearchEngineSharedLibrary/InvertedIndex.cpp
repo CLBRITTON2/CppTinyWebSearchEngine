@@ -98,7 +98,5 @@ void InvertedIndex::SaveToBinaryFile(const std::string& fileName)
 	{
 		std::cerr << "Error writing to file" << std::endl;
 	}
-
-	std::cout << "Save to binary: index - end" << std::endl;
 }
 
