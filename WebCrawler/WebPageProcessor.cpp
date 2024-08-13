@@ -1,5 +1,7 @@
 #include "WebPageProcessor.h"
 #include <curl/curl.h>
+#include <regex>
+#include <stack>
 
 size_t WebPageProcessor::WriteCallback(void* buffer, size_t bufferSize, size_t numberOfBlocks, void* userData)
 {
@@ -7,8 +9,13 @@ size_t WebPageProcessor::WriteCallback(void* buffer, size_t bufferSize, size_t n
 	return bufferSize * numberOfBlocks;
 }
 
+WebPageProcessor::WebPageProcessor()
+{
+	_lemmatizer.LoadBinary("english.bin");
+}
+
 // Sets a web pages content to an extracted HTML string via http request
-void WebPageProcessor::ProcessWebPage(WebPage& webPage)
+void WebPageProcessor::ProcessWebPage(WebPage& webPage, std::queue<string>& urlQueue)
 {
 	// Get the web page URL
 	std::string webPageUrl = webPage.GetWebPageUrl();
@@ -18,7 +25,7 @@ void WebPageProcessor::ProcessWebPage(WebPage& webPage)
 
 	// Pass the raw html string to html extractor which Extracts URLS and serializes all words on a page
 	// It's ugly and violates SRP - but the memory management with LXB library would be atrociouis without this - maybe refactor later
-	std::string extractedText = ExtractTextFromHtml(rawHtmlString);
+	std::string extractedText = ExtractTextFromHtml(rawHtmlString, urlQueue);
 
 	// Set the current web page content to the stripped text representation of the web page
 	webPage.SetWebPageContent(extractedText);
@@ -36,10 +43,26 @@ std::string WebPageProcessor::GetContentFromHttpRequest(const std::string& webPa
 	if (curlHandle)
 	{
 		// Set the URL to fetch
+		curl_easy_setopt(curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
 		CURLcode setOptResult = curl_easy_setopt(curlHandle, CURLOPT_URL, webPageUrl.c_str());
+		// Only allow redirects to HTTP and HTTPS URLs
+		curl_easy_setopt(curlHandle, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
+		curl_easy_setopt(curlHandle, CURLOPT_AUTOREFERER, 1L);
+		curl_easy_setopt(curlHandle, CURLOPT_MAXREDIRS, 10L);
+
+		// skip files larger than a gigabyte
+		curl_easy_setopt(curlHandle, CURLOPT_MAXFILESIZE_LARGE, (curl_off_t)1024 * 1024 * 1024);
+
+		// Each transfer needs to be done within 20 seconds
+		curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT_MS, 20000L);
+
+		// connect fast or fail 
+		curl_easy_setopt(curlHandle, CURLOPT_CONNECTTIMEOUT_MS, 2000L);
+
 		if (setOptResult != CURLE_OK)
 		{
 			std::cerr << "curl_easy_setopt failed: " << curl_easy_strerror(setOptResult) << std::endl;
+			curl_easy_cleanup(curlHandle);
 			return "";
 		}
 
@@ -55,7 +78,8 @@ std::string WebPageProcessor::GetContentFromHttpRequest(const std::string& webPa
 		// Validate the response
 		if (httpResponseCode != CURLE_OK)
 		{
-			std::cout << "cURL error: " << curl_easy_strerror(httpResponseCode);
+			std::cout << "cURL error: " << curl_easy_strerror(httpResponseCode) << std::endl;
+			curl_easy_cleanup(curlHandle);
 			return "";
 		}
 		else
@@ -73,11 +97,14 @@ std::string WebPageProcessor::GetContentFromHttpRequest(const std::string& webPa
 	}
 }
 
-std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageContent)
+std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageContent, std::queue<string>& urlQueue)
 {
 	lxb_status_t status;
 	lxb_html_parser_t* htmlParser;
 	lxb_html_document_t* document;
+
+	// Make lemmatizer threadsafe - multiple threads trying to use the lemmatizer = lemmatizer destructor error
+	std::lock_guard<std::mutex> lock(_lemmatizerMutex);
 
 	htmlParser = lxb_html_parser_create();
 	status = lxb_html_parser_init(htmlParser);
@@ -110,10 +137,8 @@ std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageCont
 
 	lxb_dom_node_t* root = lxb_dom_interface_node(document);
 
-	// Extract and write all discovered URLs to a txt file
-	std::ofstream outputFile("all_links.txt");
-	ExtractUrlsFromWebpage(root, outputFile);
-	outputFile.close();
+	// Extract and write all discovered URLs to a queue
+	ExtractUrlsFromWebpage(root, urlQueue);
 
 	std::string extractedText{ "" };
 	try
@@ -131,55 +156,112 @@ std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageCont
 	return extractedText;
 }
 
+//void WebPageProcessor::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
+//{
+//	if (node->type == LXB_DOM_NODE_TYPE_TEXT)
+//	{
+//		size_t len;
+//		lxb_char_t* text = lxb_dom_node_text_content(node, &len);
+//		std::string filteredText{ "" };
+//
+//		for (size_t i = 0; i < len; ++i)
+//		{
+//			char character = static_cast<char>(text[i]);
+//			if (isalnum(static_cast<unsigned char>(character)) || isspace(static_cast<unsigned char>(character)))
+//			{
+//				// Serialize lowercase for case agnostic querying
+//				filteredText.push_back(tolower(character));
+//			}
+//		}
+//
+//		// Split the filteredText into words
+//		std::istringstream iss(filteredText);
+//		std::string word;
+//
+//		extractedText.reserve(extractedText.size() + filteredText.size()); // Reserve space
+//
+//		while (iss >> word)
+//		{
+//			// Lemmatize each word
+//			char* lemmatizedWord = _lemmatizer.Lemmatize(word.c_str());
+//			extractedText += lemmatizedWord;
+//			extractedText += " ";
+//			delete[] lemmatizedWord;
+//		}
+//	}
+//	else
+//	{
+//		// Small filter to avoid serializing a ton of values that don't relate to desired data
+//		if (node->local_name != LXB_TAG_STYLE && node->local_name != LXB_TAG_SCRIPT)
+//		{
+//			lxb_dom_node_t* child = lxb_dom_node_first_child(node);
+//			while (child != NULL)
+//			{
+//				SerializeTextContent(child, extractedText);
+//				child = child->next;
+//			}
+//		}
+//	}
+//}
+
 void WebPageProcessor::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
 {
-	if (node->type == LXB_DOM_NODE_TYPE_TEXT)
-	{
-		size_t len;
-		lxb_char_t* text = lxb_dom_node_text_content(node, &len);
-		std::string filteredText{ "" };
+	std::stack<lxb_dom_node_t*> nodeStack;
+	nodeStack.push(node);
 
-		for (size_t i = 0; i < len; ++i)
+	while (!nodeStack.empty())
+	{
+		lxb_dom_node_t* currentNode = nodeStack.top();
+		nodeStack.pop();
+
+		if (currentNode->type == LXB_DOM_NODE_TYPE_TEXT)
 		{
-			char character = static_cast<char>(text[i]);
-			if (isalnum(static_cast<unsigned char>(character)) || isspace(static_cast<unsigned char>(character)))
+			size_t len;
+			lxb_char_t* text = lxb_dom_node_text_content(currentNode, &len);
+			std::string filteredText{ "" };
+
+			for (size_t i = 0; i < len; ++i)
 			{
-				// Serialize lowercase for case agnostic querying
-				filteredText.push_back(tolower(character));
+				char character = static_cast<char>(text[i]);
+				if (isalnum(static_cast<unsigned char>(character)) || isspace(static_cast<unsigned char>(character)))
+				{
+					// Serialize lowercase for case agnostic querying
+					filteredText.push_back(tolower(character));
+				}
+			}
+
+			// Split the filteredText into words
+			std::istringstream iss(filteredText);
+			std::string word;
+
+			extractedText.reserve(extractedText.size() + filteredText.size()); // Reserve space
+
+			while (iss >> word)
+			{
+				// Lemmatize each word
+				char* lemmatizedWord = _lemmatizer.Lemmatize(word.c_str());
+				extractedText += lemmatizedWord;
+				extractedText += " ";
+				delete[] lemmatizedWord;
 			}
 		}
-
-		// Split the filteredText into words
-		std::istringstream iss(filteredText);
-		std::string word;
-
-		extractedText.reserve(extractedText.size() + filteredText.size()); // Reserve space
-
-		while (iss >> word)
+		else
 		{
-			// Lemmatize each word
-			char* lemmatizedWord = _lemmatizer->Lemmatize(word.c_str());
-			extractedText += lemmatizedWord;
-			extractedText += " ";
-			delete[] lemmatizedWord;
-		}
-	}
-	else
-	{
-		// Small filter to avoid serializing a ton of values that don't relate to desired data
-		if (node->local_name != LXB_TAG_STYLE && node->local_name != LXB_TAG_SCRIPT)
-		{
-			lxb_dom_node_t* child = lxb_dom_node_first_child(node);
-			while (child != NULL)
+			// Small filter to avoid serializing a ton of values that don't relate to desired data
+			if (currentNode->local_name != LXB_TAG_STYLE && currentNode->local_name != LXB_TAG_SCRIPT)
 			{
-				SerializeTextContent(child, extractedText);
-				child = child->next;
+				lxb_dom_node_t* child = lxb_dom_node_first_child(currentNode);
+				while (child != NULL)
+				{
+					nodeStack.push(child);
+					child = child->next;
+				}
 			}
 		}
 	}
 }
 
-void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstream& outputFile)
+void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::queue<string>& urlQueue)
 {
 	if (node->local_name == LXB_TAG_A) // Check for anchor tags (links)
 	{
@@ -188,6 +270,14 @@ void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstrea
 		if (href)
 		{
 			std::string href_str{ (const char*)href, strlen((const char*)href) };
+			std::regex urlPattern("^(https?|ftp)://[^\\s/$.?#].[^\\s]*$");
+
+			// Remove fragment identifiers (e.g., #anchor)
+			size_t fragment_pos = href_str.find('#');
+			if (fragment_pos != std::string::npos) 
+			{
+				href_str.erase(fragment_pos);
+			}
 
 			// Check if the link starts with a valid scheme
 			if (href_str.find("http://") == 0 || href_str.find("https://") == 0)
@@ -198,14 +288,20 @@ void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstrea
 					// Check if it's an English Wikipedia page
 					if (href_str.find("https://en.wikipedia.org/") == 0)
 					{
-						//std::cout << "English Wikipedia page: " << href_str << std::endl;
-						outputFile << href_str << std::endl; // Write the English Wikipedia link to the file
+						if (!href_str.empty() && std::regex_match(href_str, urlPattern))
+						{
+							//std::cout << "English Wikipedia page: " << href_str << std::endl;
+							urlQueue.push(href_str);
+						}
 					}
 				}
 				else
 				{
-					//std::cout << "Non-Wikipedia page: " << href_str << std::endl;
-					outputFile << href_str << std::endl; // Write the non-Wikipedia link to the file
+					if (!href_str.empty() && std::regex_match(href_str, urlPattern))
+					{
+						//std::cout << "Non-Wikipedia page: " << href_str << std::endl;
+						urlQueue.push(href_str);
+					}
 				}
 			}
 		}
@@ -216,7 +312,7 @@ void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::ofstrea
 		lxb_dom_node_t* child = lxb_dom_node_first_child(node);
 		while (child != NULL)
 		{
-			ExtractUrlsFromWebpage(child, outputFile);
+			ExtractUrlsFromWebpage(child, urlQueue);
 			child = child->next;
 		}
 	}
@@ -234,9 +330,4 @@ void WebPageProcessor::CleanupLXB(lxb_html_parser_t* htmlParser, lxb_html_docume
 		lxb_html_document_destroy(document);
 		document = nullptr;
 	}
-}
-
-void WebPageProcessor::SetLemmatizer(RdrLemmatizer* lemmatizer)
-{
-	_lemmatizer = lemmatizer;
 }
