@@ -156,56 +156,9 @@ std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageCont
 	return extractedText;
 }
 
-//void WebPageProcessor::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
-//{
-//	if (node->type == LXB_DOM_NODE_TYPE_TEXT)
-//	{
-//		size_t len;
-//		lxb_char_t* text = lxb_dom_node_text_content(node, &len);
-//		std::string filteredText{ "" };
-//
-//		for (size_t i = 0; i < len; ++i)
-//		{
-//			char character = static_cast<char>(text[i]);
-//			if (isalnum(static_cast<unsigned char>(character)) || isspace(static_cast<unsigned char>(character)))
-//			{
-//				// Serialize lowercase for case agnostic querying
-//				filteredText.push_back(tolower(character));
-//			}
-//		}
-//
-//		// Split the filteredText into words
-//		std::istringstream iss(filteredText);
-//		std::string word;
-//
-//		extractedText.reserve(extractedText.size() + filteredText.size()); // Reserve space
-//
-//		while (iss >> word)
-//		{
-//			// Lemmatize each word
-//			char* lemmatizedWord = _lemmatizer.Lemmatize(word.c_str());
-//			extractedText += lemmatizedWord;
-//			extractedText += " ";
-//			delete[] lemmatizedWord;
-//		}
-//	}
-//	else
-//	{
-//		// Small filter to avoid serializing a ton of values that don't relate to desired data
-//		if (node->local_name != LXB_TAG_STYLE && node->local_name != LXB_TAG_SCRIPT)
-//		{
-//			lxb_dom_node_t* child = lxb_dom_node_first_child(node);
-//			while (child != NULL)
-//			{
-//				SerializeTextContent(child, extractedText);
-//				child = child->next;
-//			}
-//		}
-//	}
-//}
-
 void WebPageProcessor::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
 {
+	// Using a node stack instead of recursion. Recursion caused a stack overflow on larger web pages
 	std::stack<lxb_dom_node_t*> nodeStack;
 	nodeStack.push(node);
 

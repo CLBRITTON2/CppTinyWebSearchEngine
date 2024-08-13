@@ -21,20 +21,17 @@ void WebCrawler::SetNumberOfPagesToScrape(int numberOfPagesToScrape)
 
 bool WebCrawler::IndexWebPage(WebPage& webPage)
 {
-
 	// Dont try processing a page if we've already hit our predefined max
 	if (_totalPagesScraped >= _numberOfPagesToScrape)
 	{
 		return false;
 	}
 
-	std::cout << "Beginning indexing process..." << std::endl;
-
 	// Check to see if we've already indexed this page - no need for duplicates
 	if (_webPageRepository.IsWebPagedIndexed(webPage.GetWebPageUrl()))
 	{
 		// We don't want to incement the web page ID if the page is already indexed
-		std::cout << "Web Page ID: " << webPage.GetWebPageID() << ", has already been indexed - moving on..." << std::endl;
+		std::cout << "Web Page: " << webPage.GetWebPageUrl() << ", has already been indexed - moving on..." << std::endl;
 		return false;
 	}
 	else
@@ -48,10 +45,10 @@ bool WebCrawler::IndexWebPage(WebPage& webPage)
 }
 
 WebCrawler::WebCrawler()
-	:_webPageID{1}, _totalPagesScraped{0}, _numberOfPagesToScrape{0}
+	:_totalPagesScraped{0}, _numberOfPagesToScrape{0}
 {
 	// Seed URL
-	_urlQueue.push("https://en.wikipedia.org/wiki/Search_engine");
+	_urlQueue.push("https://www.wikipedia.org/");
 }
 
 void WebCrawler::Crawl()
@@ -85,26 +82,16 @@ void WebCrawler::Crawl()
 					try
 					{
 						// Create the web page to index
-						WebPage webPage(url, _webPageID);
+						WebPage webPage(url);
 
 						// Returns true if the page hasn't already been indexed
 						if (IndexWebPage(webPage))
 						{
-							// Increment the web page id since this page was successfully indexed
-							std::lock_guard<std::mutex> pageIdLock(_pageIdMutex);
-							_webPageID++;
-
 							std::lock_guard<std::mutex> pagesScrapedLock(_totalPagesScrapedMutex);
 							if (_totalPagesScraped < _numberOfPagesToScrape) 
 							{
 								_totalPagesScraped++;
 								std::cout << "Total number of pages scraped update: " << _totalPagesScraped << std::endl;
-							}
-							else 
-							{
-								// Decrement the web page id since this page was not added to the repository
-								pageIdLock;
-								_webPageID--;
 							}
 						}
 					}

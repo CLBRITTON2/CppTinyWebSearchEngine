@@ -9,15 +9,15 @@ using std::chrono::duration;
 using std::chrono::milliseconds;
 
 // Print all search results
-static void PrintAllSearchResults(std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
+static void PrintAllSearchResults(std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
 {
 	for (const auto& result : searchResults)
 	{
-		std::shared_ptr<WebPage> webPage = result.first;
+		std::string webPageUrl = result.first;
 		std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
 		int totalFrequencyScore = result.second.second;
 
-		std::cout << "Web Page ID: " << webPage->GetWebPageID() << ", Frequency of search terms: " << std::endl;
+		std::cout << "Web Page: " << webPageUrl << "\nFrequency of search terms: " << std::endl;
 
 		for (const auto& keyWordFrequency : keywordFrequencies)
 		{
@@ -30,28 +30,27 @@ static void PrintAllSearchResults(std::unordered_map<std::shared_ptr<WebPage>, s
 }
 
 // Print the search result with the highest number of query matches
-static void PrintSearchResultsWithHigestQueryFrequency(std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
+static void PrintSearchResultsWithHigestQueryFrequency(std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
 {
-	int highestFrequencyScore = 0;
-	std::shared_ptr<WebPage> highestScoringWebPage = nullptr;
+	int highestFrequencyScore{0};
+	std::string highestScoringWebPage{""};
 
 	for (const auto& result : searchResults)
 	{
-		std::shared_ptr<WebPage> currentWebPage = result.first;
+		std::string currentWebPageUrl = result.first;
 		std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
 		int currentSearchResultFrequencyScore = result.second.second;
 
 		if (currentSearchResultFrequencyScore > highestFrequencyScore)
 		{
 			highestFrequencyScore = currentSearchResultFrequencyScore;
-			highestScoringWebPage = currentWebPage;
+			highestScoringWebPage = currentWebPageUrl;
 		}
 	}
 
-	if (highestScoringWebPage != nullptr)
+	if (highestScoringWebPage != "")
 	{
-		std::cout << "Web Page ID: " << highestScoringWebPage->GetWebPageID() << ", Highest total query keyword match with:  " << highestFrequencyScore << " combined occurnces of queried terms on this web page" << std::endl;
-		std::cout << "URL: " << highestScoringWebPage->GetWebPageUrl() << std::endl;
+		std::cout << "Web Page: " << highestScoringWebPage << "\nHighest total query keyword match with:  " << highestFrequencyScore << " combined occurnces of queried terms on this web page" << std::endl;
 	}
 	else
 	{
@@ -85,7 +84,7 @@ int main()
 		}
 
 		auto timeThree = high_resolution_clock::now();
-		std::unordered_map<std::shared_ptr<WebPage>, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
+		std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
 		auto timeFour = high_resolution_clock::now();
 
 		//PrintAllSearchResults(searchResults);

@@ -9,7 +9,7 @@
 
 void InvertedIndex::TokenizeWebPageContent(const WebPage& webPage)
 {
-	int webPageID = webPage.GetWebPageID();
+	std::string webPageUrl = webPage.GetWebPageUrl();
 	std::stringstream stringStream(webPage.GetWebPageContent());
 	std::string token;
 
@@ -17,19 +17,19 @@ void InvertedIndex::TokenizeWebPageContent(const WebPage& webPage)
 	while (stringStream >> token)
 	{
 		// Increment the frequency of each token for the current web page
-		_index[token][webPageID]++;
+		_index[token][webPageUrl]++;
 	}
 }
 
-std::vector<std::pair<int, int>> InvertedIndex::GetTokenFrequency(const std::string& query)
+std::vector<std::pair<std::string, int>> InvertedIndex::GetTokenFrequency(const std::string& query)
 {
-	std::vector<std::pair<int, int>> searchResults;
+	std::vector<std::pair<std::string, int>> searchResults;
 
 	if (_index.find(query) != _index.end())
 	{
-		for (const auto& pageIdFrequency : _index[query])
+		for (const auto& wordFrequency : _index[query])
 		{
-			searchResults.push_back(pageIdFrequency);
+			searchResults.push_back(wordFrequency);
 		}
 	}
 	else

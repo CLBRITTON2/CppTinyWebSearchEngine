@@ -3,13 +3,13 @@
 #include <boost/serialization/string.hpp>
 
 WebPage::WebPage()
-	:_url{""}, _webPageContent{""}, _webPageID{0}
+	:_url{""}, _webPageContent{""}
 {
 
 }
 
-WebPage::WebPage(const std::string& url, int webPageID, const std::string& webPageContent)
-	:_url{ url }, _webPageID{ webPageID }, _webPageContent{ webPageContent }
+WebPage::WebPage(const std::string& url, const std::string& webPageContent)
+	:_url{ url }, _webPageContent{ webPageContent }
 {
 }
 
@@ -27,9 +27,4 @@ const std::string& WebPage::GetWebPageContent() const
 void WebPage::SetWebPageContent(const std::string webPageContent)
 {
 	_webPageContent = webPageContent;
-}
-
-const int WebPage::GetWebPageID() const
-{
-	return _webPageID;
 }

@@ -9,16 +9,15 @@
 
 void WebPageRepository::AddWebPage(WebPage& webPage)
 {
-	int webPageID = webPage.GetWebPageID();
 	std::string url = webPage.GetWebPageUrl();
-	_webPages[webPageID] = std::make_shared<WebPage>(webPage);
+	_webPages[url] = std::make_shared<WebPage>(webPage);
 
 	std::cout << "Webpage added to repository: " << url << std::endl;
 }
 
-std::shared_ptr<WebPage> WebPageRepository::GetWebPageById(int webPageID)
+std::shared_ptr<WebPage> WebPageRepository::GetWebPageByUrl(const std::string& webPageUrl)
 {
-	auto iterator = _webPages.find(webPageID);
+	auto iterator = _webPages.find(webPageUrl);
 	if (iterator != _webPages.end())
 	{
 		return iterator->second;
