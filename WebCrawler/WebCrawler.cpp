@@ -55,7 +55,7 @@ WebCrawler::WebCrawler()
 	:_totalPagesScraped{0}, _numberOfPagesToScrape{0}
 {
 	// Seed URL
-	_urlQueue.push("https://www.wikipedia.org/");
+	_urlQueue.push("https://www.google.com");
 }
 
 void WebCrawler::Crawl()
@@ -94,7 +94,6 @@ void WebCrawler::Crawl()
 						// Returns true if the page hasn't already been indexed
 						if (IndexWebPage(webPage))
 						{
-							std::lock_guard<std::mutex> pagesScrapedLock(_totalPagesScrapedMutex);
 							if (_totalPagesScraped < _numberOfPagesToScrape) 
 							{
 								_totalPagesScraped++;
