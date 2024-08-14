@@ -41,6 +41,11 @@ bool WebPageRepository::IsWebPagedIndexed(const std::string& webPageUrl)
 	return false;
 }
 
+size_t WebPageRepository::GetWebPageRepositoryCount()
+{
+	return _webPages.size();
+}
+
 //Save the _webPages map to binary
 void WebPageRepository::SaveToBinaryFile(const std::string& fileName)
 {

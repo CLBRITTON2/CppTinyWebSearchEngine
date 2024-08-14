@@ -18,6 +18,8 @@ public:
 	// Check to see whether or not a web page has been indexed
 	bool IsWebPagedIndexed(const std::string& webPageUrl);
 
+	size_t GetWebPageRepositoryCount();
+
 private:
 	std::map<std::string, std::shared_ptr<WebPage>> _webPages;
 	friend class boost::serialization::access;
