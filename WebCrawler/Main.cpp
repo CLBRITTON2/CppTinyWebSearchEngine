@@ -43,17 +43,17 @@ int main()
 	webCrawler.SetNumberOfPagesToScrape(numberOfPagesToScrape);
 
 	// Broken at the moment - url queue isn't populated if a page has indexed - easy fix for another time maybe
-	//try
-	//{
-	//	// See if we already started building binaries that we can use to pick up where we left off
-	//	std::cout << "Attempting to load binaries..." << std::endl;
-	//	std::cout << std::endl;
-	//	webCrawler.LoadRepositoryFromBinaryFile("WebPages");
-	//}
-	//catch (const boost::archive::archive_exception& e)
-	//{
-	//	std::cerr << "Deserialization failed: " << e.what() << std::endl;
-	//}
+	try
+	{
+		// See if we already started building binaries that we can use to pick up where we left off
+		std::cout << "Attempting to load binaries..." << std::endl;
+		std::cout << std::endl;
+		webCrawler.LoadRepositoryFromBinaryFile("WebPages");
+	}
+	catch (const boost::archive::archive_exception& e)
+	{
+		std::cerr << "Deserialization failed: " << e.what() << std::endl;
+	}
 
 	webCrawler.Crawl();
 
