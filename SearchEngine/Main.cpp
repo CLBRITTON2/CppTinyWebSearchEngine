@@ -9,7 +9,7 @@ using std::chrono::duration;
 using std::chrono::milliseconds;
 
 // Print the top 10 search results with the highest number of query matches
-static void PrintTop10SearchResults(std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
+static void PrintTop10SearchResults(std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>>& searchResults, size_t totalSearchablePages)
 {
 	// Create a vector to store the search results with their frequencies
 	std::vector<std::pair<std::string, int>> topResults;
@@ -24,13 +24,15 @@ static void PrintTop10SearchResults(std::unordered_map<std::string, std::pair<st
 	std::sort(topResults.begin(), topResults.end(), [](const auto& a, const auto& b) { return a.second > b.second; });
 
 	std::cout << "________________________________________________________________________________________________________\n" << std::endl;
-	std::cout << "Here are the top 10 web pages based on your query:\n" << std::endl;
+	std::cout << "Displaying \"top 10\" web pages out of: " << std::to_string((int)totalSearchablePages) << " based on your query: " << std::endl;
+	std::cout << "________________________________________________________________________________________________________\n" << std::endl;
 	// Print the top 10 search results
 	int count = 0;
 	for (const auto& result : topResults)
 	{
 		if (count >= 10) break;
-		std::cout << "Web Page: " << result.first << "\nTotal query keyword match: " << result.second << " combined occurrences of queried terms on this web page\n" << std::endl;
+		std::cout << "Web Page: " << result.first << "\nTotal query keyword match: " << result.second << std::endl;
+		std::cout << std::endl;
 		count++;
 	}
 
@@ -42,7 +44,7 @@ static void PrintTop10SearchResults(std::unordered_map<std::string, std::pair<st
 	std::cout << "________________________________________________________________________________________________________" << std::endl;
 }
 
-// Print all search results
+// Print all search results (should probably be used for nothing more than testing on small batches of data)
 static void PrintAllSearchResults(std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
 {
 	for (const auto& result : searchResults)
@@ -109,7 +111,8 @@ int main()
 	while (true)
 	{
 		std::string query{""};
-		std::cout << "Enter your search query (or 'exit' to quit): ";
+		std::cout << "Type \'exit\' to quit." << std::endl;
+		std::cout << "Enter a search query: ";
 		std::getline(std::cin, query);
 
 		if (query == "exit")
@@ -121,13 +124,14 @@ int main()
 		std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
 		auto timeFour = high_resolution_clock::now();
 
-		//PrintSearchResultsWithHigestQueryFrequency(searchResults);
-		PrintTop10SearchResults(searchResults);
+		size_t totalSearchablePages = searchEngine.GetTotalSearchableWebPages();
+		PrintTop10SearchResults(searchResults, totalSearchablePages);
 
 		// Getting number of milliseconds as a double. 
 		duration<double, std::milli> msToSearch = timeFour - timeThree;
 		std::cout << std::endl;
 		std::cout << "It took " << msToSearch.count() << " ms to run the search query against the index" << std::endl;
+		std::cout << "________________________________________________________________________________________________________" << std::endl;
 		std::cout << std::endl;
 
 	}

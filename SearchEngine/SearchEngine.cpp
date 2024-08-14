@@ -36,3 +36,8 @@ std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, 
     }
     return searchResults;
 }
+
+size_t SearchEngine::GetTotalSearchableWebPages()
+{
+    return _webPageRepository.GetWebPageRepositoryCount();
+}
