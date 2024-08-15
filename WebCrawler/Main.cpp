@@ -42,7 +42,7 @@ int main()
 
 	webCrawler.SetNumberOfPagesToScrape(numberOfPagesToScrape);
 
-	// Broken at the moment - url queue isn't populated if a page has indexed - easy fix for another time maybe
+	// 20240815 If you don't change the seed URL... When the web crawler loads the binaries it won't populate the url queue - it won't scrape
 	try
 	{
 		// See if we already started building binaries that we can use to pick up where we left off

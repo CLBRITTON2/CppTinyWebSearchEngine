@@ -23,12 +23,15 @@ void WebPageProcessor::ProcessWebPage(WebPage& webPage, std::queue<string>& urlQ
 	// Get the contents of a web page and place it in raw html string
 	std::string rawHtmlString = GetContentFromHttpRequest(webPageUrl, webPage);
 
-	// Pass the raw html string to html extractor which Extracts URLS and serializes all words on a page
+	// Pass the raw html string to html extractor which Extracts URLS, extracts the web page title, and serializes all words on a page
 	// It's ugly and violates SRP - but the memory management with LXB library would be atrociouis without this - maybe refactor later
-	std::string extractedText = ExtractTextFromHtml(rawHtmlString, urlQueue);
+	DataExtractedFromHtml extractedData = ExtractTextFromHtml(rawHtmlString, urlQueue);
 
-	// Set the current web page content to the stripped text representation of the web page
-	webPage.SetWebPageContent(extractedText);
+	// Set the current web page content to the stripped text representation of the web page which is part of the extractedData struct
+	webPage.SetWebPageContent(extractedData.extractedText);
+
+	// Set the web page title which is part of the extractedData struct
+	webPage.SetWebPageTitle(extractedData.webPageTitle);
 }
 
 // HTTP request returns a massive string of unserialized webpage HTML data
@@ -97,11 +100,12 @@ std::string WebPageProcessor::GetContentFromHttpRequest(const std::string& webPa
 	}
 }
 
-std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageContent, std::queue<string>& urlQueue)
+DataExtractedFromHtml WebPageProcessor::ExtractTextFromHtml(const std::string& webPageContent, std::queue<string>& urlQueue)
 {
 	lxb_status_t status;
 	lxb_html_parser_t* htmlParser;
 	lxb_html_document_t* document;
+	DataExtractedFromHtml extractedData;
 
 	// Make lemmatizer threadsafe - multiple threads trying to use the lemmatizer = lemmatizer destructor error
 	std::lock_guard<std::mutex> lock(_lemmatizerMutex);
@@ -139,11 +143,11 @@ std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageCont
 
 	// Extract and write all discovered URLs to a queue
 	ExtractUrlsFromWebpage(root, urlQueue);
+	extractedData.webPageTitle = ExtractWebPageTitle(root);
 
-	std::string extractedText{ "" };
 	try
 	{
-		SerializeTextContent(root, extractedText);
+		SerializeTextContent(root, extractedData.extractedText);
 	}
 	catch (const std::exception& e)
 	{
@@ -153,7 +157,7 @@ std::string WebPageProcessor::ExtractTextFromHtml(const std::string& webPageCont
 	// Clean up 
 	CleanupLXB(htmlParser, document);
 
-	return extractedText;
+	return extractedData;
 }
 
 void WebPageProcessor::SerializeTextContent(lxb_dom_node_t* node, std::string& extractedText)
@@ -269,6 +273,43 @@ void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::queue<s
 			child = child->next;
 		}
 	}
+}
+
+std::string WebPageProcessor::ExtractWebPageTitle(lxb_dom_node_t* node)
+{
+	std::string title{ "" };
+
+	std::stack<lxb_dom_node_t*> nodeStack;
+	nodeStack.push(node);
+
+	while (!nodeStack.empty())
+	{
+		lxb_dom_node_t* currentNode = nodeStack.top();
+		nodeStack.pop();
+
+		if (currentNode->type == LXB_DOM_NODE_TYPE_ELEMENT && currentNode->local_name == LXB_TAG_TITLE)
+		{
+			lxb_dom_node_t* titleChild = lxb_dom_node_first_child(currentNode);
+			if (titleChild != NULL && titleChild->type == LXB_DOM_NODE_TYPE_TEXT)
+			{
+				size_t len;
+				lxb_char_t* text = lxb_dom_node_text_content(titleChild, &len);
+				title.assign((const char*)text, len);
+			}
+			break; // Stop searching once we find the title tag
+		}
+		else
+		{
+			lxb_dom_node_t* child = lxb_dom_node_first_child(currentNode);
+			while (child != NULL)
+			{
+				nodeStack.push(child);
+				child = child->next;
+			}
+		}
+	}
+
+	return title;
 }
 
 void WebPageProcessor::CleanupLXB(lxb_html_parser_t* htmlParser, lxb_html_document_t* document)

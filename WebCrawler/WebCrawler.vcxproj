@@ -138,6 +138,7 @@
     <ClCompile Include="WebPageProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DataExtractedFromHtml.h" />
     <ClInclude Include="WebCrawler.h" />
     <ClInclude Include="WebPageProcessor.h" />
   </ItemGroup>

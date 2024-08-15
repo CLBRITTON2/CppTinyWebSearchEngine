@@ -12,9 +12,16 @@ void SearchEngine::LoadRepositoryFromBinaryFile(const std::string& fileName)
 	_index.LoadFromBinaryFile(fileName + ".index");
 }
 
-std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>> SearchEngine::Search(std::string& query)
+// searchResults: Map of Web Pages with their Titles and Keyword Frequencies
+//   - Key: Web Page URL
+//   - Value: Pair containing:
+//       - Web Page Title
+//       - Pair containing:
+//           - Word Frequency Map (Word -> Frequency)
+//           - Total Frequency of all Keywords 
+std::unordered_map<std::string, std::pair<std::string, std::pair<std::unordered_map<std::string, int>, int>>> SearchEngine::Search(std::string& query)
 {
-    std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>> searchResults;
+    std::unordered_map<std::string, std::pair<std::string, std::pair<std::unordered_map<std::string, int>, int>>> searchResults;
 
     std::vector<std::string> parsedSearchQuery = _queryParser.Parse(query);
 
@@ -27,11 +34,17 @@ std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, 
             // Use the web page URL as the key
             std::string webPageUrl = result.first;
 
+            // Get the web page title
+            std::string webPageTitle = _webPageRepository.GetWebPageTitle(webPageUrl);
+
+            // Store the web page title
+            searchResults[webPageUrl].first = webPageTitle;
+
             // Store the frequency count of the individual word
-            searchResults[webPageUrl].first[word] += result.second;
+            searchResults[webPageUrl].second.first[word] += result.second;
 
             // Store the total frequency of all keywords from the query
-            searchResults[webPageUrl].second += result.second;
+            searchResults[webPageUrl].second.second += result.second;
         }
     }
     return searchResults;
@@ -40,4 +53,9 @@ std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, 
 size_t SearchEngine::GetTotalSearchableWebPages()
 {
     return _webPageRepository.GetWebPageRepositoryCount();
+}
+
+std::string SearchEngine::GetWebPageTitleByUrl(const std::string& webPageUrl)
+{
+   return _webPageRepository.GetWebPageTitle(webPageUrl);
 }

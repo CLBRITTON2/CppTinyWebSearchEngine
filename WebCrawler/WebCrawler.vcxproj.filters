@@ -32,5 +32,8 @@
     <ClInclude Include="WebPageProcessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DataExtractedFromHtml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

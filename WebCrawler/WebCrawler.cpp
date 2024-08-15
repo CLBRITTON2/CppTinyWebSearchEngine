@@ -1,6 +1,13 @@
 #include "WebCrawler.h"
 #include <thread>
 
+WebCrawler::WebCrawler()
+	:_totalPagesScraped{ 0 }, _numberOfPagesToScrape{ 0 }
+{
+	// Seed URL
+	_urlQueue.push("https://www.geeksforgeeks.org");
+}
+
 void WebCrawler::SaveRepositoryToBinaryFile(const std::string& fileName)
 {
 	_webPageRepository.SaveToBinaryFile(fileName + ".repository");
@@ -33,29 +40,26 @@ bool WebCrawler::IndexWebPage(WebPage& webPage)
 	{
 		return false;
 	}
-
-	// Check to see if we've already indexed this page - no need for duplicates
-	if (_webPageRepository.IsWebPagedIndexed(webPage.GetWebPageUrl()))
-	{
-		// We don't want to incement the web page ID if the page is already indexed
-		Log("Web Page: " + webPage.GetWebPageUrl() + ", has already been indexed - moving on...");
-		return false;
-	}
 	else
 	{
-		// Page hasn't been indexed - process it
-		_webPageProcessor.ProcessWebPage(webPage, _urlQueue);
-		_index.TokenizeWebPageContent(webPage);
-		_webPageRepository.AddWebPage(webPage);
-		return true;
+		// Check to see if we've already indexed this page - no need for duplicates
+		if (_webPageRepository.IsWebPagedIndexed(webPage.GetWebPageUrl()))
+		{
+			Log("Web Page: " + webPage.GetWebPageUrl() + ", has already been indexed - moving on...");
+			return false;
+		}
+		else
+		{
+			if (_totalPagesScraped <= _numberOfPagesToScrape)
+			{
+				// Page hasn't been indexed - process it
+				_webPageProcessor.ProcessWebPage(webPage, _urlQueue);
+				_index.TokenizeWebPageContent(webPage);
+				_webPageRepository.AddWebPage(webPage);
+				return true;
+			}
+		}
 	}
-}
-
-WebCrawler::WebCrawler()
-	:_totalPagesScraped{0}, _numberOfPagesToScrape{0}
-{
-	// Seed URL
-	_urlQueue.push("https://www.google.com");
 }
 
 void WebCrawler::Crawl()
@@ -72,7 +76,7 @@ void WebCrawler::Crawl()
 	while (_totalPagesScraped < _numberOfPagesToScrape)
 	{
 		// Process web pages in batches of 100 to manage threads
-		while (!_urlQueue.empty() && threads.size() < batchSize)
+		while (!_urlQueue.empty() && threads.size() < batchSize && _totalPagesScraped < _numberOfPagesToScrape)
 		{
 			// Exit loop - we've scraped the desired number of pages
 			if (_totalPagesScraped >= _numberOfPagesToScrape)
@@ -91,14 +95,14 @@ void WebCrawler::Crawl()
 						// Create the web page to index
 						WebPage webPage(url);
 
+						// I thought I could avoid the mutex lock by making _totalPagesScraped an atomic int - didn't work
+						// Without the mutex lock total pages scraped isn't incremented correctly - more pages are added to the repository than intended
+						std::lock_guard<std::mutex> pagesScrapedLock(_totalPagesScrapedMutex);
 						// Returns true if the page hasn't already been indexed
-						if (IndexWebPage(webPage))
+						if (IndexWebPage(webPage) && _totalPagesScraped < _numberOfPagesToScrape)
 						{
-							if (_totalPagesScraped < _numberOfPagesToScrape) 
-							{
-								_totalPagesScraped++;
-								Log("Total number of pages scraped update: " + std::to_string(_totalPagesScraped));
-							}
+							_totalPagesScraped++;
+							Log("Total number of pages scraped update: " + std::to_string(_totalPagesScraped));
 						}
 					}
 					catch (const std::exception& e)
@@ -119,7 +123,10 @@ void WebCrawler::Crawl()
 				threads.clear();
 
 				// Save repository by batch - saving at the end of the program could be expensive
-				SaveRepositoryToBinaryFile("WebPages");
+				if (_totalPagesScraped <= _numberOfPagesToScrape)
+				{
+					SaveRepositoryToBinaryFile("WebPages");
+				}
 
 				// Reset the count - the batch has been saved
 				webPagesProcessedCount = 0;

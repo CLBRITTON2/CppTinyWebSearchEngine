@@ -46,6 +46,11 @@ size_t WebPageRepository::GetWebPageRepositoryCount()
 	return _webPages.size();
 }
 
+std::string WebPageRepository::GetWebPageTitle(const std::string& webPageUrl)
+{
+	return _webPages[webPageUrl].get()->GetWebPageTitle();
+}
+
 //Save the _webPages map to binary
 void WebPageRepository::SaveToBinaryFile(const std::string& fileName)
 {

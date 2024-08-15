@@ -9,29 +9,40 @@ using std::chrono::duration;
 using std::chrono::milliseconds;
 
 // Print the top 10 search results with the highest number of query matches
-static void PrintTop10SearchResults(std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>>& searchResults, size_t totalSearchablePages)
+static void PrintTop10SearchResults(std::unordered_map<std::string, std::pair<std::string, std::pair<std::unordered_map<std::string, int>, int>>>& searchResults, size_t totalSearchablePages)
 {
 	// Create a vector to store the search results with their frequencies
-	std::vector<std::pair<std::string, int>> topResults;
+	std::vector<std::tuple<std::string, std::string, int>> topResults;
 
 	// Iterate over the search results and add them to the vector
 	for (const auto& result : searchResults)
 	{
-		topResults.emplace_back(result.first, result.second.second);
+		topResults.emplace_back(result.first, result.second.first, result.second.second.second);
 	}
 
-	// Sort the vector in descending order based on the frequency
-	std::sort(topResults.begin(), topResults.end(), [](const auto& a, const auto& b) { return a.second > b.second; });
+	// Sort the vector in descending order based on the frequency which is the 3rd element of the tuple  (std::get<2> is getting the 3rd element aka frequency)
+	std::sort(topResults.begin(), topResults.end(), [](const auto& a, const auto& b) { return std::get<2>(a) > std::get<2>(b); });
 
 	std::cout << "________________________________________________________________________________________________________\n" << std::endl;
 	std::cout << "Displaying \"top 10\" web pages out of: " << std::to_string((int)totalSearchablePages) << " based on your query: " << std::endl;
 	std::cout << "________________________________________________________________________________________________________\n" << std::endl;
+
 	// Print the top 10 search results
 	int count = 0;
 	for (const auto& result : topResults)
 	{
-		if (count >= 10) break;
-		std::cout << "Web Page: " << result.first << "\nTotal query keyword match: " << result.second << std::endl;
+		if (count >= 10)
+		{
+			break;
+		}
+
+		std::string webPageUrl = std::get<0>(result);
+		std::string webPageTitle = std::get<1>(result);
+		int totalMatches = std::get<2>(result);
+
+		std::cout << "Web Page: " << webPageTitle << std::endl; 
+		std::cout << "Total query word matches: " << totalMatches << std::endl;
+		std::cout << "URL: " << webPageUrl << std::endl;
 		std::cout << std::endl;
 		count++;
 	}
@@ -45,54 +56,54 @@ static void PrintTop10SearchResults(std::unordered_map<std::string, std::pair<st
 }
 
 // Print all search results (should probably be used for nothing more than testing on small batches of data)
-static void PrintAllSearchResults(std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
-{
-	for (const auto& result : searchResults)
-	{
-		std::string webPageUrl = result.first;
-		std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
-		int totalFrequencyScore = result.second.second;
-
-		std::cout << "Web Page: " << webPageUrl << "\nFrequency of search terms: " << std::endl;
-
-		for (const auto& keyWordFrequency : keywordFrequencies)
-		{
-			std::cout << keyWordFrequency.first << ":" << keyWordFrequency.second << std::endl;
-		}
-
-		std::cout << "Total frequency score: " << totalFrequencyScore << std::endl;
-		std::cout << std::endl;
-	}
-}
-
-// Print the search result with the highest number of query matches
-static void PrintSearchResultsWithHigestQueryFrequency(std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>>& searchResults)
-{
-	int highestFrequencyScore{0};
-	std::string highestScoringWebPage{""};
-
-	for (const auto& result : searchResults)
-	{
-		std::string currentWebPageUrl = result.first;
-		std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
-		int currentSearchResultFrequencyScore = result.second.second;
-
-		if (currentSearchResultFrequencyScore > highestFrequencyScore)
-		{
-			highestFrequencyScore = currentSearchResultFrequencyScore;
-			highestScoringWebPage = currentWebPageUrl;
-		}
-	}
-
-	if (highestScoringWebPage != "")
-	{
-		std::cout << "Web Page: " << highestScoringWebPage << "\nHighest total query keyword match with:  " << highestFrequencyScore << " combined occurnces of queried terms on this web page" << std::endl;
-	}
-	else
-	{
-		std::cout << "No search results found." << std::endl;
-	}
-}
+//static void PrintAllSearchResults(std::unordered_map<std::string, std::pair<std::string, std::pair<std::unordered_map<std::string, int>, int>>>& searchResults)
+//{
+//	for (const auto& result : searchResults)
+//	{
+//		std::string webPageUrl = result.first;
+//		std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
+//		int totalFrequencyScore = result.second.second;
+//
+//		std::cout << "Web Page: " << webPageUrl << "\nFrequency of search terms: " << std::endl;
+//
+//		for (const auto& keyWordFrequency : keywordFrequencies)
+//		{
+//			std::cout << keyWordFrequency.first << ":" << keyWordFrequency.second << std::endl;
+//		}
+//
+//		std::cout << "Total frequency score: " << totalFrequencyScore << std::endl;
+//		std::cout << std::endl;
+//	}
+//}
+//
+//// Print the search result with the highest number of query matches
+//static void PrintSearchResultsWithHigestQueryFrequency(std::unordered_map<std::string, std::pair<std::string, std::pair<std::unordered_map<std::string, int>, int>>>& searchResults)
+//{
+//	int highestFrequencyScore{0};
+//	std::string highestScoringWebPage{""};
+//
+//	for (const auto& result : searchResults)
+//	{
+//		std::string currentWebPageUrl = result.first;
+//		std::unordered_map<std::string, int> keywordFrequencies = result.second.first;
+//		int currentSearchResultFrequencyScore = result.second.second;
+//
+//		if (currentSearchResultFrequencyScore > highestFrequencyScore)
+//		{
+//			highestFrequencyScore = currentSearchResultFrequencyScore;
+//			highestScoringWebPage = currentWebPageUrl;
+//		}
+//	}
+//
+//	if (highestScoringWebPage != "")
+//	{
+//		std::cout << "Web Page: " << highestScoringWebPage << "\nHighest total query keyword match with:  " << highestFrequencyScore << " combined occurnces of queried terms on this web page" << std::endl;
+//	}
+//	else
+//	{
+//		std::cout << "No search results found." << std::endl;
+//	}
+//}
 
 int main()
 {
@@ -121,7 +132,7 @@ int main()
 		}
 
 		auto timeThree = high_resolution_clock::now();
-		std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>> searchResults = searchEngine.Search(query);
+		std::unordered_map<std::string, std::pair<std::string, std::pair<std::unordered_map<std::string, int>, int>>> searchResults = searchEngine.Search(query);
 		auto timeFour = high_resolution_clock::now();
 
 		size_t totalSearchablePages = searchEngine.GetTotalSearchableWebPages();

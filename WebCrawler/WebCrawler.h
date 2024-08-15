@@ -19,7 +19,8 @@ private:
 	InvertedIndex _index;
 	WebPageRepository _webPageRepository;
 	std::queue<string> _urlQueue;
-	std::atomic<int> _totalPagesScraped;
+	int _totalPagesScraped;
+	std::mutex _totalPagesScrapedMutex;
 	int _numberOfPagesToScrape;
 	std::mutex _logMutex;
 };

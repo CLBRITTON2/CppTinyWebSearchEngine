@@ -8,8 +8,9 @@ class SearchEngine
 public:
 	SearchEngine();
 	void LoadRepositoryFromBinaryFile(const std::string& fileName);
-	std::unordered_map<std::string, std::pair<std::unordered_map<std::string, int>, int>> Search(std::string& query);
+	std::unordered_map<std::string, std::pair<std::string, std::pair<std::unordered_map<std::string, int>, int>>> Search(std::string& query);
 	size_t GetTotalSearchableWebPages();
+	std::string GetWebPageTitleByUrl(const std::string& webPageUrl);
 
 private:
 	InvertedIndex _index;

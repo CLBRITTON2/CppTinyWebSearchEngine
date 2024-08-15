@@ -20,6 +20,8 @@ public:
 
 	size_t GetWebPageRepositoryCount();
 
+	std::string GetWebPageTitle(const std::string& webPageUrl);
+
 private:
 	std::map<std::string, std::shared_ptr<WebPage>> _webPages;
 	friend class boost::serialization::access;
