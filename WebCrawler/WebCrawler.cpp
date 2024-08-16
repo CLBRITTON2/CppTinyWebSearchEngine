@@ -50,13 +50,18 @@ bool WebCrawler::IndexWebPage(WebPage& webPage)
 		}
 		else
 		{
-			if (_totalPagesScraped <= _numberOfPagesToScrape)
+			try
 			{
 				// Page hasn't been indexed - process it
 				_webPageProcessor.ProcessWebPage(webPage, _urlQueue);
 				_index.TokenizeWebPageContent(webPage);
 				_webPageRepository.AddWebPage(webPage);
 				return true;
+			}
+			catch (const std::exception& e)
+			{
+				Log("Error indexing web page: " + std::string(e.what()));
+				return false;
 			}
 		}
 	}
@@ -67,7 +72,7 @@ void WebCrawler::Crawl()
 	Log("Crawler started...");
 
 	std::vector<std::thread> threads;
-	int batchSize = 100;
+	int batchSize = 10;
 
 	// Used for managing batches - not total
 	int webPagesProcessedCount = 0;
@@ -95,13 +100,14 @@ void WebCrawler::Crawl()
 						// Create the web page to index
 						WebPage webPage(url);
 
-						// I thought I could avoid the mutex lock by making _totalPagesScraped an atomic int - didn't work
-						// Without the mutex lock total pages scraped isn't incremented correctly - more pages are added to the repository than intended
-						std::lock_guard<std::mutex> pagesScrapedLock(_totalPagesScrapedMutex);
+						bool webPageIndexSuccess = IndexWebPage(webPage);
 						// Returns true if the page hasn't already been indexed
-						if (IndexWebPage(webPage) && _totalPagesScraped < _numberOfPagesToScrape)
+						if (webPageIndexSuccess && _totalPagesScraped < _numberOfPagesToScrape)
 						{
-							_totalPagesScraped++;
+							// I thought I could avoid the mutex lock by making _totalPagesScraped an atomic int - didn't work
+							// Without the mutex lock total pages scraped isn't incremented correctly - more pages are added to the repository than intended
+							std::lock_guard<std::mutex> pagesScrapedLock(_totalPagesScrapedMutex);
+							_totalPagesScraped.fetch_add(1);
 							Log("Total number of pages scraped update: " + std::to_string(_totalPagesScraped));
 						}
 					}

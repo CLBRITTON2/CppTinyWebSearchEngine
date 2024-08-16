@@ -218,7 +218,7 @@ void WebPageProcessor::SerializeTextContent(lxb_dom_node_t* node, std::string& e
 	}
 }
 
-void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::queue<string>& urlQueue)
+void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::queue<std::string>& urlQueue)
 {
 	if (node->local_name == LXB_TAG_A) // Check for anchor tags (links)
 	{
@@ -227,14 +227,21 @@ void WebPageProcessor::ExtractUrlsFromWebpage(lxb_dom_node_t* node, std::queue<s
 		if (href)
 		{
 			std::string href_str{ (const char*)href, strlen((const char*)href) };
-			std::regex urlPattern("^(https?|ftp)://[^\\s/$.?#].[^\\s]*$");
 
-			// Remove fragment identifiers (e.g., #anchor)
+			// Remove query parameters and fragments
+			size_t query_pos = href_str.find('?');
+			if (query_pos != std::string::npos)
+			{
+				href_str.erase(query_pos);
+			}
+
 			size_t fragment_pos = href_str.find('#');
-			if (fragment_pos != std::string::npos) 
+			if (fragment_pos != std::string::npos)
 			{
 				href_str.erase(fragment_pos);
 			}
+
+			std::regex urlPattern("^(https?|ftp)://[^\\s/$.?#].[^\\s]*$");
 
 			// Check if the link starts with a valid scheme
 			if (href_str.find("http://") == 0 || href_str.find("https://") == 0)
