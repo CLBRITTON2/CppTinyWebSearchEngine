@@ -108,12 +108,6 @@ void WebCrawler::Crawl()
                     }
                 });
 
-            	// Save repository by batch - saving at the end of the program could be expensive
-				if (_webPageRepository.GetWebPageRepositoryCount() <= _numberOfPagesToScrape)
-				{
-					//SaveRepositoryToBinaryFile("WebPages");
-				}
-
             webPagesProcessedCount++;
 
             if (webPagesProcessedCount >= batchSize)
@@ -151,4 +145,5 @@ void WebCrawler::Crawl()
     int totalSearchablePages = _webPageRepository.GetWebPageRepositoryCount();
     std::cout << "_webPageRepository finishing count: " << std::to_string(totalSearchablePages) << std::endl;
     Log("Number of web pages scraped: " + std::to_string(totalSearchablePages));
+    SaveRepositoryToBinaryFile("WebPages");
 }
